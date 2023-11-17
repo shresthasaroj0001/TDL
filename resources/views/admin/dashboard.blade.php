@@ -1,34 +1,47 @@
 @extends('admin.master')
 @section('mycss')
-<link href="/b/build/toastr.css" rel="stylesheet" type="text/css" />
+{{--
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" /> --}}
+
 @endsection
 
 @section('myscript')
 <script src="/b/js/toastr.js"></script>
 
+<script src="/b/js/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous">
+</script>
+<script src="/b/assets/demo/chart-area-demo.js"></script>
+<script src="/b/assets/demo/chart-bar-demo.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
+    crossorigin="anonymous"></script>
+<script src="/b/js/datatables-simple-demo.js"></script>
+
 <script>
-$(document).ready(function () {
-    toastr.options = {
-    "closeButton": false,
-    "debug": false,
-    "newestOnTop": false,
-    "progressBar": false,
-    "positionClass": "toast-top-right",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "5000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-    }
-    $('#toastrOptions').text(toastr["success"]("My name is Inigo Montoya. You killed my father. Prepare to die!"));
-    
-    
-    });
+    $(document).ready(function () {
+toastr.options = {
+"closeButton": false,
+"debug": false,
+"newestOnTop": false,
+"progressBar": false,
+"positionClass": "toast-top-right",
+"preventDuplicates": false,
+"onclick": null,
+"showDuration": "300",
+"hideDuration": "1000",
+"timeOut": "5000",
+"extendedTimeOut": "1000",
+"showEasing": "swing",
+"hideEasing": "linear",
+"showMethod": "fadeIn",
+"hideMethod": "fadeOut"
+}
+
+
+$('#toastrOptions').text(toastr["success"]("My name is Inigo Montoya. You killed my father. Prepare to die!"));
+
+
+});
 </script>
 @endsection
 
