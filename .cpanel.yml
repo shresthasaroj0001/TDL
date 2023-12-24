@@ -1,11 +1,9 @@
 ---
 deployment:
       tasks:
-          - export DEPLOYPATH=/home3/shresthasarojcom/test    # deploypath
-          - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np #deploy public_html path
+          - export DEPLOYPATH=/home3/shresthasarojcom/test/    # deploypath
+          - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np/ 
 
-          - /bin/rm -Rf $DEPLOYPATH  #remove all files
-          - /bin/cp -r * $DEPLOYPATH                         #copy all recursively to $DEPLOYPATH
+          - /bin/cp -R $DEPLOYPATH                         #copy all recursively to $DEPLOYPATH
 
-          - /bin/rm -Rf $PUBLICPATH  #remove all files
-          - /bin/cp -r * 'public'/ $PUBLICPATH    
+           - /bin/cp -R public $PUBLICPATH    
