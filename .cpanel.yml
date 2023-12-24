@@ -1,0 +1,11 @@
+---
+deployment:
+      tasks:
+          - export DEPLOYPATH=/home3/shresthasarojcom/public_html    # deploypath
+          - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np #deploy public_html path
+
+          - /bin/rm -Rf ${DEPLOYPATH}  #remove all files
+          - /bin/cp -r * ${DEPLOYPATH} --exclude 'public' --exclude=*/.env*                         #copy all recursively to $DEPLOYPATH
+
+          - /bin/rm -Rf ${PUBLICPATH}  #remove all files
+          - /bin/cp -r * 'public'/ ${PUBLICPATH}    
