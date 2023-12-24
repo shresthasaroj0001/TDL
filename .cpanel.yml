@@ -4,7 +4,6 @@ deployment:
           - export DEPLOYPATH=/home3/shresthasarojcom/test/    # deploypath
           - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np/
 
-          - /bin/rm -Rf /home3/shresthasarojcom/test/*  #remove all files in a the directory
           - /bin/cp -r * $DEPLOYPATH  --exclude public                      #copy all recursively to $DEPLOYPATH
 
            - /bin/rm -Rf /home3/shresthasarojcom/test.shrestha-saroj.com.np/*  #remove all files in a the directory
