@@ -7,7 +7,9 @@ deployment:
           - /bin/cp -r * $DEPLOYPATH                    
           - /bin/rm -Rf /home3/shresthasarojcom/test/public
 
-          - /bin/cp -r /home3/shresthasarojcom/test_env/* $DEPLOYPATH  
+          - /bin/cp -r /home3/shresthasarojcom/test_env/.env $DEPLOYPATH  
 
           - /bin/rm -Rf /home3/shresthasarojcom/test.shrestha-saroj.com.np/
           - /bin/cp -r public $PUBLICPATH
+          
+          - /bin/cp -r /home3/shresthasarojcom/test_env/index.php $PUBLICPATH  
