@@ -4,4 +4,10 @@ deployment:
           - export DEPLOYPATH=/home3/shresthasarojcom/test/    # deploypath
           - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np/
 
-          - /bin/cp -r * $DEPLOYPATH                     #copy all recursively to $DEPLOYPATH
+          - /bin/cp -r * $DEPLOYPATH                    
+          - /bin/rm -Rf /home3/shresthasarojcom/test/public
+
+          - /bin/cp /home3/shresthasarojcom/test_env/* $DEPLOYPATH  
+
+          - /bin/rm -Rf /home3/shresthasarojcom/test.shrestha-saroj.com.np/
+          - /bin/cp -r public $PUBLICPATH
