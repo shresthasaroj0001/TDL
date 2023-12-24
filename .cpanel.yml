@@ -1,7 +1,7 @@
 ---
 deployment:
       tasks:
-          - export DEPLOYPATH=/home3/shresthasarojcom/public_html    # deploypath
+          - export DEPLOYPATH=/home3/shresthasarojcom/test    # deploypath
           - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np #deploy public_html path
 
           - /bin/rm -Rf ${DEPLOYPATH}  #remove all files
