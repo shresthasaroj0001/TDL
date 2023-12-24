@@ -1,9 +1,7 @@
 ---
 deployment:
       tasks:
-          - export DEPLOYPATH=/home3/shresthasarojcom/test    # deploypath
+          - export DEPLOYPATH=/home3/shresthasarojcom/test/    # deploypath
           - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np/
 
-          - /bin/rm -Rf /home3/shresthasarojcom/test
-          - /bin/mkdir test
           - /bin/cp -r * $DEPLOYPATH                     #copy all recursively to $DEPLOYPATH
