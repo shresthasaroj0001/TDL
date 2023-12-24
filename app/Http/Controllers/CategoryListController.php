@@ -8,13 +8,21 @@ use DateTime;
 use DB;
 use Validator;
 
-class CategoryController extends Controller
+class CategoryListController extends Controller
 {
-    //category
-    //type_id = 1
     public function indexx()
     {
-        return view('admin.category.indexx');
+        return view('admin.categorylist.indexx');
+    }
+
+    private function getMyList($typeid)
+    {
+        if ($typeid == 2)
+            return "Expenses";
+        else if ($typeid == 3)
+            return "Income";
+        else
+            return "Invalid";
     }
 
     public function index($setting)
@@ -23,57 +31,59 @@ class CategoryController extends Controller
         if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
             return redirect()->route('setting_name')->withInput()->with('error', "Invalid URL parameters.");
         }
-        $typeid = (int) $setting;
+        $categoryId = (int) $setting;
 
-        if ($typeid == 1)
-            $name = "Period Name";
-        else if ($typeid == 2)
-            $name = "Expense Category";
-        else {
-            return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
+        if ($categoryId == 2 || $categoryId == 3) {
+        } else {
+            return redirect()->route('dashboard')->withInput()->with('error', "Category not listed");
         }
 
-        $responses = DB::select("SELECT category_id, name, description FROM category WHERE is_deleted=0 and type_id=? order by category_id desc", [$typeid]);
+        $responses = DB::select("select category_list.name, category_list.description, category.name as category,is_monthly, is_active, category_list_id from category inner join category_list on category.category_id=category_list.category_id WHERE category.type_id=? order by is_active desc, category_list_id desc", [$categoryId]);
 
-        return view('admin.category.index')->with('list', $responses)->with('typeid', $setting)->with('setting_name', $name);
+        return view('admin.categorylist.index')->with('list', $responses)->with('categoryId', $categoryId)->with('categoryName', $this->getMyList($categoryId));
     }
 
     public function create($setting)
     {
         //validation
         if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
-            return redirect()->route('setting_name')->withInput()->with('error', "Invalid URL parameters.");
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
         }
-        $typeid = (int) $setting;
+        $categoryId = (int) $setting;
 
-        if ($typeid == 1)
-            $name = "Period Name";
-        else if ($typeid == 2)
-            $name = "Expense Category";
-        else {
-            return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
+        if ($categoryId == 2 || $categoryId == 3) {
+        } else {
+            return redirect()->route('dashboard')->withInput()->with('error', "Settings Name not listed");
         }
 
-        return view('admin.category.create')->with('typeid', $setting)->with('setting_name', $name);
+        //get category list
+        $category = DB::select("SELECT category_id, name FROM category WHERE is_deleted=0 and type_id=?", [$categoryId]);
+        if ($category == null) {
+            return redirect()->route('setting.name.create', [$categoryId])->withInput()->with('error', "Failed. Please create".$this->getMyList($categoryId));
+        }
+
+        return view('admin.categorylist.create')->with('categoryId', $categoryId)->with('categorylist', $category)->with('categoryName', $this->getMyList($categoryId));
     }
 
     public function store($setting, Request $request)
     {
         if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
-            return redirect()->route('setting_name')->withInput()->with('error', "Invalid URL parameters.");
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
         }
-        $typeid = (int) $setting;
+        $categoryId = (int) $setting;
 
-        if ($typeid >= 1 && $typeid <= 2) {
+        if ($categoryId == 2 || $categoryId == 3) {
         } else {
-            return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
+            return redirect()->route('setting.list.index', [$categoryId])->withInput()->with('error', "Category not listed");
         }
 
         $Validator = Validator::make(
             $request->all(),
             [
                 'name' => 'required|max:240',
-                'body' => 'max:240'
+                'body' => 'max:240',
+                'category_id' => 'required|numeric',
+                'ismonthly' => 'required|in:0,1',
             ],
             $messages = [
                 'required' => 'The :attribute field is required.',
@@ -87,10 +97,11 @@ class CategoryController extends Controller
         try {
 
             $name = $request->name;
-            $ress = DB::select("SELECT category_id FROM category WHERE is_deleted=0 and type_id=? and name=?", [$typeid, $name]);
+            $ress = DB::select("SELECT name FROM category_list WHERE category_id IN (SELECT category_id from category where category.type_id=?) and name=?", [$categoryId, $name]);
+            
             if ($ress != null) {
                 //return $ress;
-                return redirect()->route('setting.name.create',[$typeid])->withInput()->with('error', "Failed. Please use different name");
+                return redirect()->route('setting.list.create', [$categoryId])->withInput()->with('error', "Failed. Please use different name");
             }
 
             $description = $request->body;
@@ -98,13 +109,15 @@ class CategoryController extends Controller
                 $description = "";
             }
 
-            DB::table('category')->insert(
-                ['name' => $name, 'description' => $description, 'type_id' => $typeid, 'is_deleted' => 0]
+            $ismonthly = $request->ismonthly;
+            $category_id = $request->category_id;// id from category table
+            DB::table('category_list')->insert(
+                ['name' => $name, 'description' => $description, 'category_id' => $category_id, 'is_monthly' => $ismonthly, 'is_active' => 1]
             );
 
-            return redirect()->route('setting.name.index',[$typeid])->withInput()->with('success', "Added successfully");
+            return redirect()->route('setting.list.index', [$categoryId])->withInput()->with('success', "Added successfully");
         } catch (\Exception $e) {
-            return redirect()->route('setting.name.create',[$typeid])->withInput()->with('error', "Failed. Please try again");
+            return redirect()->route('setting.list.create', [$categoryId])->withInput()->with('error', "Failed. Please try again");
         }
     }
 

@@ -9,22 +9,21 @@ crossorigin="anonymous"></script>
 <script src="/b/js/datatables-simple-demo.js"></script>
 @endsection
 
+
 @section('bodycontent')
 <div class="container-fluid px-4">
+    {{-- <h1 class="mt-4">Item Category</h1> --}}
     <br>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('setting_name') }}">Settings</a></li>
-        <li class="breadcrumb-item active">{{$setting_name}}</li>
+        <li class="breadcrumb-item active">Dashboard</li>
     </ol>
-    @include('admin.messages')
     <div class="card mb-4">
         <div class="card-header">
             <div class="row">
                 <div class="col-md-6"> <i class="fas fa-table me-1"></i>
-                    List of {{$setting_name}}</div>
+                    List of Category</div>
                 <div class="col-md-6" style="text-align: right;">  
-                    <a href="{{route('setting.name.create',[$typeid])}}"><button class="btn btn-primary">Add New</button></a>
+                    <a href="{{route('item-category.create')}}"><button class="btn btn-primary">Add New</button></a>
                 </div>
             </div>
         </div>
@@ -38,15 +37,24 @@ crossorigin="anonymous"></script>
                         <th>Action</th>
                     </tr>
                 </thead>
+                <tfoot>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Office</th>
+                        <th>Age</th>
+                        <th>Start date</th>
+                        <th>Salary</th>
+                    </tr>
+                </tfoot>
                 <tbody>
                     @foreach ($list as $index=>$item)
                     <tr>
                         <td>{{$index + 1}}</td>
                         <td>{{$item->name}}</td>
                         <td>{{$item->description}}</td>
-                        <td><button class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
-                            {{-- <td><a href="{{route('item-category.destroy',[$item->category_id])}}">
-                                <button class="btn btn-danger">Delete</button></a></td> --}}
+                        <td><a href="{{route('item-category.destroy',[$item->category_id])}}">
+                            <button class="btn btn-danger">Delete</button></a></td>
                     </tr>
                     @endforeach
                 </tbody>

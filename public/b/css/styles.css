@@ -108,7 +108,7 @@ hr {
   margin: 1rem 0;
   color: inherit;
   border: 0;
-  border-top: 1px solid;
+  border-top: 2px solid;
   opacity: 0.25;
 }
 
@@ -316,8 +316,11 @@ table {
 caption {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
-  color: #6c757d;
+  color: black;
   text-align: left;
+  font-size: larger;
+  text-decoration: underline;
+  font-weight: 700;
 }
 
 th {

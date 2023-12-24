@@ -18,6 +18,7 @@ class RedirectIfAuthenticated
     public function handle($request, Closure $next, $guard = null)
     {
         if (Auth::guard($guard)->check()) {
+            return redirect()->route('dashboard', ['success' => 'Welcome Back']);
             return redirect('/dashboard');
         }
 
