@@ -1,13 +1,15 @@
 @extends('admin.master')
 @section('mycss')
-{{--
-<link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" /> --}}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 @endsection
 
 @section('myscript')
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-    crossorigin="anonymous"></script>
-<script src="/b/js/datatables-simple-demo.js"></script>
+<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+<script>
+    $(function(){
+        var table = $("#datatablesSimple").DataTable();
+    });
+</script>
 @endsection
 
 @section('bodycontent')
@@ -32,7 +34,7 @@
             </div>
         </div>
         <div class="card-body">
-            <table id="datatablesSimple">
+            <table id="datatablesSimple" class="display">
                 <thead>
                     <tr>
                         <th>S.N</th>

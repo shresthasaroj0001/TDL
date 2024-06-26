@@ -28,7 +28,8 @@ Route::resource('setting.list', 'CategoryListController');
 
 Route::resource('entry.item', 'EntryController');
 
-Route::get('/report/overview/{typeid}', 'ReportController@overview')->name('report_overview');
+Route::get('/report/overview/{typeid}', 'ReportController@test')->name('report_overview');
+
 Route::get('/report/overview/{typeid}/last-entry', 'ReportController@getLastEntryOfaCategory');
 Route::post('/report/overview/{typeid}/last-entry', 'ReportController@StoreMonthyExpenseEntry');
 Route::get('/report/balance', 'ReportController@balance')->name('report_balance');

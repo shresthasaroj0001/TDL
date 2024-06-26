@@ -36,17 +36,27 @@ crossorigin="anonymous"></script>
                     <tr>
                         <td>Period Name</td>
                         <td>Month - Billing Period Name</td>
-                        <td><a href="{{route('setting.name.index',[1])}}"><button class="btn btn-danger">Manage</button></a></td>
+                        <td><a href="{{route('setting.name.index',[1])}}"><button class="btn btn-primary">Manage</button></a></td>
                     </tr>
                     <tr>
                         <td>Expense Category</td>
                         <td>Heading for Expenses like Bank, Utilities, Supplier Category</td>
-                        <td><a href="{{route('setting.name.index',[2])}}"><button class="btn btn-danger">Manage</button></a></td>
+                        <td><a href="{{route('setting.name.index',[2])}}"><button class="btn btn-primary">Manage</button></a></td>
                     </tr>
                     <tr>
                         <td>Income Category</td>
                         <td>In Store, Online devices name</td>
-                        <td><a href="{{route('setting.name.index',[3])}}"><button class="btn btn-danger">Manage</button></a></td>
+                        <td><a href="{{route('setting.name.index',[3])}}"><button class="btn btn-primary">Manage</button></a></td>
+                    </tr>
+                    <tr>
+                        <td>Expense Report</td>
+                        <td>Heading for Reporting</td>
+                        <td><a href="{{route('setting.name.index',[4])}}"><button class="btn btn-primary">Manage</button></a></td>
+                    </tr>
+                    <tr>
+                        <td>Income Report</td>
+                        <td>Heading for Reporting</td>
+                        <td><a href="{{route('setting.name.index',[5])}}"><button class="btn btn-primary">Manage</button></a></td>
                     </tr>
                 </tbody>
             </table>

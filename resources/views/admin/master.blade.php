@@ -66,6 +66,10 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Income List
                         </a>
+                        <a class="nav-link" href="{{route('setting.list.index',[4])}}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Custom Expense Reporting
+                        </a>
                         <div class="sb-sidenav-menu-heading">Register</div>
                         <a class="nav-link" href="{{ route('entry.item.create',[2]) }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>

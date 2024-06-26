@@ -22,7 +22,22 @@ class ReportController extends Controller
 
     public function test()
     {
-        return view('admin.report.overview_test');
+        $periods = DB::select("select category_id as id, name, description from category as tblPeriod where type_id=1 and is_deleted=0 order by category_id desc");
+
+        $periodId = 25;
+        $categoryName ='test';
+        $categoryId =0;
+        $categories =array();
+        $categoryListId =0;
+        $categoryLists = array();
+        $hst_sum=0;
+        $total_sum=0;
+        $typeId =2;
+
+        $sql = 'With categoryList As ( select category.name as catName, category.category_id as catid, category_list.name, category_list.description, is_monthly, category_list_id from category_list inner join category on category_list.category_id=category.category_id where category.type_id= 2 ) select tblPeriod.category_id as tblPeriodId, tblPeriod.name as periodName, categoryList.catName, categoryList.catid, categoryList.name as catlist, categoryList.category_list_id, tbl_entry.entry_id, tbl_entry.ref_no, tbl_entry.created_at,tbl_entry.hst_amt,tbl_entry.total_amt,tbl_entry.description from tbl_entry inner join category as tblPeriod on tbl_entry.period_id=tblPeriod.category_id left join categoryList on tbl_entry.category_list_id=categoryList.category_list_id';
+        $list = DB::select($sql);
+
+        return view('admin.report.overview_test', compact('periods','periodId','categoryName','categoryId','categories','categoryListId','categoryLists','hst_sum','total_sum','typeId','list'));
     }
 
     public function overview($setting, Request $request)
@@ -81,13 +96,13 @@ class ReportController extends Controller
             return redirect()->route('setting.list.create', [$typeId])->withInput()->with('error', "Failed. Please create " . $this->getMyList($typeId) . " headings");
         }
 
-        $sql = 'With categoryList As ( select category.name as catName, category.category_id as catid, category_list.name, category_list.description, is_monthly, category_list_id from category_list inner join category on category_list.category_id=category.category_id where category.type_id=' . $typeId . ' ) select tblPeriod.category_id as tblPeriodId, tblPeriod.name as periodName, categoryList.catName, categoryList.catid, categoryList.name as catlist,categoryList.category_list_id, tbl_entry.entry_id, tbl_entry.ref_no, tbl_entry.created_at,tbl_entry.hst_amt,tbl_entry.total_amt,tbl_entry.description from tbl_entry inner join category as tblPeriod on tbl_entry.period_id=tblPeriod.category_id left join categoryList on tbl_entry.category_list_id=categoryList.category_list_id where ';
+        $sql = 'With categoryList As ( select category.name as catName, category.category_id as catid, category_list.name, category_list.description, is_monthly, category_list_id from category_list inner join category on category_list.category_id=category.category_id where category.type_id=' . $typeId . ' ) select tblPeriod.category_id as tblPeriodId, tblPeriod.name as periodName, categoryList.catName, categoryList.catid, categoryList.name as catlist, categoryList.category_list_id, tbl_entry.entry_id, tbl_entry.ref_no, tbl_entry.created_at,tbl_entry.hst_amt,tbl_entry.total_amt,tbl_entry.description from tbl_entry inner join category as tblPeriod on tbl_entry.period_id=tblPeriod.category_id left join categoryList on tbl_entry.category_list_id=categoryList.category_list_id where ';
 
         $sql .= ' tbl_entry.is_deleted=0';
         if ($periodId != 0) {
             $sql .= ' and tbl_entry.period_id=' . $periodId;
         }
-        $sql .= ' order by tbl_entry.entry_id desc';
+        $sql .= ' order by tbl_entry.period_id asc, tbl_entry.entry_id desc, categoryList.catid, categoryList.category_list_id';
         $responses = DB::select($sql);
 
         $NotInList = array(); //find monthly item not in entry
@@ -229,4 +244,6 @@ class ReportController extends Controller
         }
         return 0;
     }
+
+
 }

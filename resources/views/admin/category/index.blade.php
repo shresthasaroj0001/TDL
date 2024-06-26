@@ -1,12 +1,10 @@
 @extends('admin.master')
 @section('mycss')
-{{-- <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" /> --}}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 @endsection
 
 @section('myscript')
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
-crossorigin="anonymous"></script>
-<script src="/b/js/datatables-simple-demo.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 @endsection
 
 @section('bodycontent')
@@ -29,7 +27,7 @@ crossorigin="anonymous"></script>
             </div>
         </div>
         <div class="card-body">
-            <table id="datatablesSimple">
+            <table id="datatablesSimple" class="table display">
                 <thead>
                     <tr>
                         <th>S.N</th>
@@ -44,9 +42,13 @@ crossorigin="anonymous"></script>
                         <td>{{$index + 1}}</td>
                         <td>{{$item->name}}</td>
                         <td>{{$item->description}}</td>
-                        <td><button class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button></td>
-                            {{-- <td><a href="{{route('item-category.destroy',[$item->category_id])}}">
-                                <button class="btn btn-danger">Delete</button></a></td> --}}
+                        <td>
+                            <button class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                            @if ($typeid > 3)
+                            <a href="{{route('setting.name.show',[$typeid, $item->id])}}">
+                                <button class="btn btn-primary">Manage</button></a>
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>

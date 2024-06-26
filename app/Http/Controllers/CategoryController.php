@@ -17,6 +17,23 @@ class CategoryController extends Controller
         return view('admin.category.indexx');
     }
 
+    private function getMyList($typeid)
+    {
+        if ($typeid == 1)
+            return "Period";
+        else if ($typeid == 2)
+            return  "Expenses" ;
+        else if ($typeid == 3)
+            return "Income";
+        else if ($typeid == 4)
+            return  "Expenses Reporting" ;
+        else if ($typeid == 5)
+            return "Income Reporting";
+
+        else
+            return "Invalid";
+    }
+
     public function index($setting)
     {
         //validation
@@ -25,17 +42,14 @@ class CategoryController extends Controller
         }
         $typeid = (int) $setting;
 
-        if ($typeid == 1)
-            $name = "Period Name";
-        else if ($typeid == 2)
-            $name = "Expense Category";
-        else {
+        if($typeid > 5 || $typeid < 1)
+        {
             return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
         }
 
-        $responses = DB::select("SELECT category_id, name, description FROM category WHERE is_deleted=0 and type_id=? order by category_id desc", [$typeid]);
+        $responses = DB::select("SELECT category_id as id, name, description FROM category WHERE is_deleted=0 and type_id=? order by category_id desc", [$typeid]);
 
-        return view('admin.category.index')->with('list', $responses)->with('typeid', $setting)->with('setting_name', $name);
+        return view('admin.category.index')->with('list', $responses)->with('typeid', $setting)->with('setting_name', $this->getMyList($typeid));
     }
 
     public function create($setting)
@@ -46,15 +60,10 @@ class CategoryController extends Controller
         }
         $typeid = (int) $setting;
 
-        if ($typeid == 1)
-            $name = "Period Name";
-        else if ($typeid == 2)
-            $name = "Expense Category";
-        else {
+        if($typeid > 5 || $typeid < 1)        
             return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
-        }
 
-        return view('admin.category.create')->with('typeid', $setting)->with('setting_name', $name);
+        return view('admin.category.create')->with('typeid', $setting)->with('setting_name', $this->getMyList($typeid));
     }
 
     public function store($setting, Request $request)
@@ -64,7 +73,7 @@ class CategoryController extends Controller
         }
         $typeid = (int) $setting;
 
-        if ($typeid >= 1 && $typeid <= 2) {
+        if ($typeid >= 1 && $typeid <= 5) {
         } else {
             return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
         }
@@ -106,6 +115,43 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('setting.name.create',[$typeid])->withInput()->with('error', "Failed. Please try again");
         }
+    }
+
+
+    public function show($setting, $name) {
+        if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
+            return redirect()->route('setting_name')->withInput()->with('error', "Invalid URL parameters.");
+        }
+        $typeid = (int) $setting;
+        if (is_null($name) || empty($name) || !is_numeric($name)) {
+            return redirect()->route('setting.name.index',[$typeid])->withInput()->with('error', "Invalid URL parameters.");
+        }
+        $categoryId = (int) $name;
+
+        $setting_name = "";
+        $setting_refId = 0;
+        if ($typeid == 4) {
+            $setting_name = "Expense";
+            $setting_refId = 2;
+        } else if ($typeid == 5) {
+            $setting_name = "Income";
+            $setting_refId = 3;
+        } else {
+            return redirect()->route('setting.name.index', [$typeid])->withInput()->with('error', "Invalid Custom Reporting URL");
+        }
+
+        //validating the custom report name
+        $responses = DB::select("select name from category where is_deleted=0 and type_id=? and category_id=?", [$typeid, $categoryId]);
+        if($responses == null)
+        {
+            return redirect()->route('setting.name.index',[$typeid])->withInput()->with('error', "Custom Reporting Name is not valid.");
+        }
+
+        $list = DB::select("SELECT category_id as id, name, description FROM category WHERE is_deleted=0 and type_id=? order by category_id desc", [$setting_refId]);
+
+        $categorylist = DB::select("select category_id, name, description, category_list_id from category_list where category_id in (select category.category_id from category where type_id=?) and is_active=1", [$typeid]);
+
+        return view('admin.category.show', compact('typeid','categoryId','list','setting_name','categorylist'));
     }
 
     public function edit($id)
