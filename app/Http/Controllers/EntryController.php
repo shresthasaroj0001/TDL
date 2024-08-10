@@ -101,9 +101,9 @@ class EntryController extends Controller
             }
         }
 
-        $sql = "WITH productlist AS (SELECT SUBSTRING(category_list.NAME,1,20) as 'NAME', category_list.description, category.NAME AS category_name, category_list.price, category_list.hst_enforced, category_list.category_list_id FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category_list.is_deleted = 0 AND category.is_deleted = 0 AND category.type_id = 1), rankTable AS (SELECT productlist.category_list_id, sum(tbl_entry.quantity) as rank from productlist left join tbl_entry on productlist.category_list_id=tbl_entry.category_list_id left join entry_header on tbl_entry.entry_id=entry_header.entry_id And entry_header.is_deleted=0 And entry_header.order_placed=1 group by productlist.category_list_id ), itemordered AS (SELECT category_list_id, tbl_entry.quantity, tbl_entry_id, entry_id FROM tbl_entry where entry_id in (".implode(",", $EntryIdsToQuery).") ) SELECT product.*, ";
+        $sql = "WITH productlist AS (SELECT SUBSTRING(category_list.NAME,1,20) as 'NAME', category_list.description, category.NAME AS category_name, category_list.price, category_list.hst_enforced, category_list.category_list_id FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category_list.is_deleted = 0 AND category.is_deleted = 0 AND category.type_id = 1), rankTable AS (SELECT productlist.category_list_id,  COALESCE(sum(tbl_entry.quantity),0) as orderQuantity from productlist left join tbl_entry on productlist.category_list_id=tbl_entry.category_list_id left join entry_header on tbl_entry.entry_id=entry_header.entry_id And entry_header.is_deleted=0 And entry_header.order_placed=1 group by productlist.category_list_id ), itemordered AS (SELECT category_list_id, tbl_entry.quantity, tbl_entry_id, entry_id FROM tbl_entry where entry_id in (".implode(",", $EntryIdsToQuery).") ) SELECT product.*, ";
         
-        $sql .= "COALESCE(SUM(CASE WHEN entry_id = ".$entry_id." THEN quantity END),0) AS quantity, COALESCE(MAX(CASE WHEN entry_id = ".$entry_id." THEN tbl_entry_id END),0) AS tbl_entry_id, rank ";
+        $sql .= "COALESCE(SUM(CASE WHEN entry_id = ".$entry_id." THEN quantity END),0) AS quantity, COALESCE(MAX(CASE WHEN entry_id = ".$entry_id." THEN tbl_entry_id END),0) AS tbl_entry_id ";
         
         if ($previousOrderResponses != null) {
             foreach ($previousOrderResponses as $index=>$prevOrderInfo) {
@@ -113,7 +113,7 @@ class EntryController extends Controller
             }
         }
  
-        $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, rank order by rankTable.rank";
+        $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, orderQuantity order by rankTable.orderQuantity";
 
         //return $sql;
         //CREATE INDEX idx_tbl_entry_entry_category ON tbl_entry(entry_id, category_list_id);
@@ -129,7 +129,7 @@ class EntryController extends Controller
     }
 
     public function create($id, Request $request)
-    {
+    {   
         $storeId = 0;
         if ($request->has('store')) {
             $var = $request->input('store');
