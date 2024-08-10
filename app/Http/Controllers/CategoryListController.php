@@ -17,12 +17,9 @@ class CategoryListController extends Controller
 
     private function getMyList($typeid)
     {
-        if ($typeid == 2)
-            return "Expenses";
-        else if ($typeid == 3)
-            return "Income";
-        else
-            return "Invalid";
+        if ($typeid == 1)
+            return "Item";
+        return "Invalid";
     }
 
     public function index($setting)
@@ -33,12 +30,12 @@ class CategoryListController extends Controller
         }
         $categoryId = (int) $setting;
 
-        if ($categoryId == 2 || $categoryId == 3) {
+        if ($categoryId == 1) { //if ($categoryId == 2 || $categoryId == 3) {
         } else {
             return redirect()->route('dashboard')->withInput()->with('error', "Category not listed");
         }
 
-        $responses = DB::select("select category_list.name, category_list.description, category.name as category,is_monthly, is_active, category_list_id from category inner join category_list on category.category_id=category_list.category_id WHERE category.type_id=? order by is_active desc, category_list_id desc", [$categoryId]);
+        $responses = DB::select("select category_list.category_list_id, category_list.name, category_list.description, category.name as category, hst_enforced, category_list_id, category_list.price from category inner join category_list on category.category_id=category_list.category_id WHERE category.is_deleted=0 and category_list.is_deleted=0 and category.type_id=? order by category_list_id desc, category_list_id desc", [$categoryId]);
 
         return view('admin.categorylist.index')->with('list', $responses)->with('categoryId', $categoryId)->with('categoryName', $this->getMyList($categoryId));
     }
@@ -51,7 +48,7 @@ class CategoryListController extends Controller
         }
         $categoryId = (int) $setting;
 
-        if ($categoryId == 2 || $categoryId == 3) {
+        if ($categoryId == 1) {
         } else {
             return redirect()->route('dashboard')->withInput()->with('error', "Settings Name not listed");
         }
@@ -59,9 +56,8 @@ class CategoryListController extends Controller
         //get category list
         $category = DB::select("SELECT category_id, name FROM category WHERE is_deleted=0 and type_id=?", [$categoryId]);
         if ($category == null) {
-            return redirect()->route('setting.name.create', [$categoryId])->withInput()->with('error', "Failed. Please create".$this->getMyList($categoryId));
+            return redirect()->route('setting.name.create', [$categoryId])->withInput()->with('error', "Failed. Please create" . $this->getMyList($categoryId));
         }
-
         return view('admin.categorylist.create')->with('categoryId', $categoryId)->with('categorylist', $category)->with('categoryName', $this->getMyList($categoryId));
     }
 
@@ -72,7 +68,7 @@ class CategoryListController extends Controller
         }
         $categoryId = (int) $setting;
 
-        if ($categoryId == 2 || $categoryId == 3) {
+        if ($categoryId == 1) {
         } else {
             return redirect()->route('setting.list.index', [$categoryId])->withInput()->with('error', "Category not listed");
         }
@@ -83,7 +79,8 @@ class CategoryListController extends Controller
                 'name' => 'required|max:240',
                 'body' => 'max:240',
                 'category_id' => 'required|numeric',
-                'ismonthly' => 'required|in:0,1',
+                'hst_enforced' => 'required|in:0,1',
+                'price' => 'required|numeric|min:0',
             ],
             $messages = [
                 'required' => 'The :attribute field is required.',
@@ -98,9 +95,8 @@ class CategoryListController extends Controller
 
             $name = $request->name;
             $ress = DB::select("SELECT name FROM category_list WHERE category_id IN (SELECT category_id from category where category.type_id=?) and name=?", [$categoryId, $name]);
-            
+
             if ($ress != null) {
-                //return $ress;
                 return redirect()->route('setting.list.create', [$categoryId])->withInput()->with('error', "Failed. Please use different name");
             }
 
@@ -109,10 +105,19 @@ class CategoryListController extends Controller
                 $description = "";
             }
 
-            $ismonthly = $request->ismonthly;
-            $category_id = $request->category_id;// id from category table
+            $hst_enforced = $request->hst_enforced;
+            if (is_null($hst_enforced) || empty($hst_enforced)) {
+                $hst_enforced = 0;
+            }
+
+            $price = $request->price;
+            if (is_null($price) || empty($price)) {
+                $price = 0;
+            }
+
+            $category_id = $request->category_id; // id from category table
             DB::table('category_list')->insert(
-                ['name' => $name, 'description' => $description, 'category_id' => $category_id, 'is_monthly' => $ismonthly, 'is_active' => 1]
+                ['name' => $name, 'description' => $description, 'category_id' => $category_id, 'hst_enforced' => $hst_enforced, 'price' => $price, 'is_deleted' => 0]
             );
 
             return redirect()->route('setting.list.index', [$categoryId])->withInput()->with('success', "Added successfully");
@@ -121,106 +126,113 @@ class CategoryListController extends Controller
         }
     }
 
-    public function edit($id)
+    public function edit($setting, $list)
     {
-        if ($id > 0) {
-            $response = DB::select("SELECT id, title,showInfront, stats, orderb FROM categories where isdeleted=0 and id=?", [$id]);
-            if ($response != null) {
-                $blogCategorys = new Category();
-                $blogCategorys->title = $response[0]->title;
-                $blogCategorys->showInfront = $response[0]->showInfront;
-                $blogCategorys->stats = $response[0]->stats;
-                $blogCategorys->orderb = $response[0]->orderb;
-                $blogCategorys->id = $id;
-
-                return view('admin.category.edit')->with('blogCategorys', $blogCategorys);
-            }
+        //validation
+        if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
         }
-        return redirect()->route('blog-category.index')->with('error', 'Category Not found');
+        $categoryId = (int) $setting;
+
+        if ($categoryId == 1) {
+        } else {
+            return redirect()->route('dashboard')->withInput()->with('error', "Settings Name not listed");
+        }
+
+        //validation
+        if (is_null($list) || empty($list) || !is_numeric($list)) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
+        }
+        $category_list_id = (int) $list;
+
+        $response = DB::select("SELECT * FROM category_list where is_deleted=0 and category_list_id=?", [$category_list_id]);
+        if ($response == null) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Item not found.");
+        }
+
+        $categoryItem = (object) [];
+        $categoryItem->category_list_id = $response[0]->category_list_id;
+        $categoryItem->category_id = $response[0]->category_id;
+        $categoryItem->name = $response[0]->name;
+        $categoryItem->description = $response[0]->description;
+        $categoryItem->hst_enforced = $response[0]->hst_enforced;
+        $categoryItem->price = $response[0]->price;
+
+        //get category list
+        $category = DB::select("SELECT category_id, name FROM category WHERE is_deleted=0 and type_id=?", [$categoryId]);
+
+        return view('admin.categorylist.edit')->with('item', $categoryItem)->with('categorylist', $category)->with('categoryName', $this->getMyList($categoryId))->with('categoryId', $categoryId);
     }
 
-    public function update(Request $request, $id)
+    public function update($setting, $list, Request $request)
     {
+        if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
+        }
+        $categoryId = (int) $setting;
+
+        if ($categoryId == 1) {
+        } else {
+            return redirect()->route('setting.list.index', [$categoryId])->withInput()->with('error', "Update operation could not be performed. Invalid URL parameters.");
+        }
+
+        if (is_null($list) || empty($list) || !is_numeric($list)) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
+        }
+        $category_list_id = (int) $list;
+
         $Validator = Validator::make(
             $request->all(),
             [
-                'title' => 'required|max:240',
-                'mmfile' => 'mimes:jpeg,png,bmp,tiff |max:4096 ',
-                'stats' => 'required|numeric',
-                'orderb' => 'required|numeric',
-                'showinfront' => 'required|numeric',
+                'name' => 'required|max:240',
+                'body' => 'max:240',
+                'category_id' => 'required|numeric',
+                'hst_enforced' => 'required|in:0,1',
+                'price' => 'required|numeric|min:0',
             ],
             $messages = [
-                'mmfile.required' => 'Please select image file.',
                 'required' => 'The :attribute field is required.',
-                'mimes' => 'Only jpeg, png, bmp,tiff are allowed.',
             ]
         );
 
-        $response = DB::select("SELECT orderb FROM categories where isdeleted=0 and id=?", [$id]);
+        if ($Validator->fails()) {
+            return redirect()->back()->withInput($request->input())->withErrors($Validator);
+        }
+
+        $response = DB::select("SELECT name FROM category_list where is_deleted=0 and category_list_id=?", [$category_list_id]);
         if ($response == null) {
-            return redirect()->route('blog-category.index')->with('error', 'Data not found. Error 2');
+            return redirect()->back()->withInput($request->input())->withErrors($Validator)->with('error', 'Record not found');
         }
 
-        $blogCategorys = new Category();
-        $blogCategorys->title = $request->title;
-        $blogCategorys->showInfront = $request->showinfront;
-        $blogCategorys->stats = $request->stats;
-        $blogCategorys->orderb = $request->orderb;
-        $blogCategorys->isdeleted = 0;
-        $blogCategorys->id = $id;
-
-        $fileNameToStore = "";
-        //DB::beginTransaction();
-        if ($request->hasFile('mmfile')) {
-            // Get jst ext
-            $extension = $request->file('mmfile')->getClientOriginalExtension();
-            //$filesize = $request->file('mfile')->getClientSize();
-
-            // if ($filesize > 11534336) {
-            //     return redirect()->back()->withInput($request->input())->with('error', 'Please select file less than 11MB');
-            // }
-            if (
-                (strcasecmp($extension, 'png') == 0) ||
-                (strcasecmp($extension, 'jpg') == 0) ||
-                (strcasecmp($extension, 'bmp') == 0) ||
-                (strcasecmp($extension, 'jpeg') == 0) ||
-                (strcasecmp($extension, 'gif') == 0)
-            ) {
-                //Filename to store
-                $fileNameToStore = "" . time() . '.' . $extension;
-                //uplod image
-                $file = $request->file('mmfile');
-                $destinationPath = public_path('/uploads/');
-                $file->move($destinationPath, $fileNameToStore);
-            }
+        $name = $request->name;
+        $description = $request->body;
+        $description = $request->body;
+        if (is_null($description) || empty($description)) {
+            $description = "";
         }
+        $hst_enforced = $request->hst_enforced;
+        $price = $request->price;
+        $category_id = $request->category_id; // id from category table
 
-        try {
-            DB::beginTransaction();
-            if ($fileNameToStore != "") {
-                DB::table('blog_images')->insert(['auth_id' => auth()->user()->id, 'blogCategory_id' => $blogCategorys->id, 'title' => $fileNameToStore, 'createdDate' => new DateTime()]);
-            }
+        $rows = DB::update('update category_list set name=?, description=?, hst_enforced=?,price=?,category_id=? where category_list_id=?', [$name, $description, $hst_enforced, $price, $category_id, $category_list_id]);
 
-            $rows = DB::update('update categories set title=?,showInfront=?,stats=?,orderb=?,created_at=?,updated_at=? where id=?', [$blogCategorys->title, $blogCategorys->showInfront, $blogCategorys->stats, $blogCategorys->orderb, new DateTime(), new DateTime(), $blogCategorys->id]);
-
-            if ($rows == 1) {
-                DB::commit();
-                return redirect()->route('blog-category.index')->with('success', 'Update Successfull');
-            } else {
-            }
-        } catch (\Exception $e) {
-            return redirect()->route('blog-category.index')->with('error', 'Update Unsuccessfull. Error 1');
+        if ($rows == 1) {
+            return redirect()->route('setting.list.index', [$setting])->with('success', 'Update Successfull');
+        } else {
+            return redirect()->route('setting.list.index', [$setting])->with('error', 'Update Unsuccessfull. Error 1');
         }
-
-        return redirect()->route('blog-category.index')->with('error', 'Update Unsuccessfull');
     }
 
-    public function destroy($id)
+    public function destroy($setting, $list)
     {
-        $rows = DB::select("SELECT orderb FROM categories where isdeleted=0 and id=?", [$id]);
+        if (is_null($list) || empty($list) || !is_numeric($list)) {
+            return 0;
+        }
+        $category_list_id = (int) $list;
+
+        $rows = DB::select("SELECT * FROM category_list where is_deleted=0 and category_list_id=?", [$category_list_id]);
         if ($rows != null) {
-            $row = DB::update("update categories set isdeleted=1,updated_at=? where id=?", [new DateTime(), $id]);
+            $row = DB::update("update category_list set is_deleted=1 where category_list_id=?", [$category_list_id]);
             if ($row == 1) {
                 return 1;
             }

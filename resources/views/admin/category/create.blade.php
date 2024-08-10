@@ -27,6 +27,7 @@
         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
         <li class="breadcrumb-item"><a href="{{ route('setting_name') }}">Settings</a></li>
         <li class="breadcrumb-item"><a href="{{ route('setting.name.index',[$typeid]) }}">{{$setting_name}}</a></li>
+        
         <li class="breadcrumb-item active">Create</li>
     </ol>
     @include('admin.messages')

@@ -84,16 +84,25 @@ $(function(){
                             </div>
                             <br>
                             <div class="form-group row">
-                                <label for="status" class="col-sm-2 col-form-label">Is Monthly</label>
+                                <label for="status" class="col-sm-2 col-form-label">HST Applicable ?</label>
                                 <div class="col-sm-10">
-                                    <select class="form-control" required id="ismonthly" name="ismonthly">
-                                        <option value="1" @if (old('ismonthly')== 1 || old('ismonthly')=='' )
+                                    <select class="form-control" required id="hst_enforced" name="hst_enforced">
+                                        <option value="1" @if (old('hst_enforced')== 1 || old('hst_enforced')=='' )
                                             selected="selected" @endif class="form-control">Yes</option>
-                                        <option value="0" @if (old('ismonthly')== 0) selected="selected" @endif
+                                        <option value="0" @if (old('hst_enforced')== 0) selected="selected" @endif
                                             class="form-control">No</option>
                                     </select>
                                 </div>
                             </div>
+                            <br>
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Price: <span
+                                        style="color: red">*</span></label>
+                                <div class="col-sm-10">
+                                    <input type="number" min="0" autocomplete="off" required class="form-control"
+                                        value="{{ old('price') }}" id="price" placeholder="" name="price">
+                                </div>
+                            </div>  
                             <br>
                             <div class="form-group row">
                                 <label for="body" class="col-sm-2 col-form-label">Description</label>

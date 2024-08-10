@@ -1,12 +1,12 @@
 <?php return array (
   'root' => 
   array (
-    'pretty_version' => 'v5.7.28',
-    'version' => '5.7.28.0',
+    'pretty_version' => 'dev-main',
+    'version' => 'dev-main',
     'aliases' => 
     array (
     ),
-    'reference' => NULL,
+    'reference' => 'b8c29f979d9de0b6e42921ccb4a926a1578015fd',
     'name' => 'laravel/laravel',
   ),
   'versions' => 
@@ -383,6 +383,24 @@
       ),
       'reference' => '9f7a229a69d52506914b4bc61bfdb199d90c5547',
     ),
+    'jaybizzle/crawler-detect' => 
+    array (
+      'pretty_version' => 'v1.2.119',
+      'version' => '1.2.119.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '275002e22b0333c15a7c6792fdae5d5deefc9ef0',
+    ),
+    'jenssegers/agent' => 
+    array (
+      'pretty_version' => 'v2.6.4',
+      'version' => '2.6.4.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'daa11c43729510b3700bc34d414664966b03bffe',
+    ),
     'kodova/hamcrest-php' => 
     array (
       'replaced' => 
@@ -410,12 +428,12 @@
     ),
     'laravel/laravel' => 
     array (
-      'pretty_version' => 'v5.7.28',
-      'version' => '5.7.28.0',
+      'pretty_version' => 'dev-main',
+      'version' => 'dev-main',
       'aliases' => 
       array (
       ),
-      'reference' => NULL,
+      'reference' => 'b8c29f979d9de0b6e42921ccb4a926a1578015fd',
     ),
     'laravel/nexmo-notification-channel' => 
     array (
@@ -470,6 +488,15 @@
       array (
       ),
       'reference' => 'ff6248ea87a9f116e78edd6002e39e5128a0d4dd',
+    ),
+    'mobiledetect/mobiledetectlib' => 
+    array (
+      'pretty_version' => '2.8.45',
+      'version' => '2.8.45.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '96aaebcf4f50d3d2692ab81d2c5132e425bca266',
     ),
     'mockery/mockery' => 
     array (
@@ -771,8 +798,8 @@
     array (
       'provided' => 
       array (
-        0 => '1.0|2.0',
-        1 => '1.0.0',
+        0 => '1.0.0',
+        1 => '1.0|2.0',
       ),
     ),
     'psr/simple-cache' => 

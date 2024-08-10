@@ -20,15 +20,15 @@ class CategoryController extends Controller
     private function getMyList($typeid)
     {
         if ($typeid == 1)
-            return "Period";
-        else if ($typeid == 2)
-            return  "Expenses" ;
-        else if ($typeid == 3)
-            return "Income";
-        else if ($typeid == 4)
-            return  "Expenses Reporting" ;
-        else if ($typeid == 5)
-            return "Income Reporting";
+            return "Category"; //food category
+        // else if ($typeid == 2)
+        //     return  "Expenses" ; 
+        // else if ($typeid == 3)
+        //     return "Income";
+        // else if ($typeid == 4)
+        //     return  "Expenses Reporting" ;
+        // else if ($typeid == 5)
+        //     return "Income Reporting";
 
         else
             return "Invalid";
@@ -42,9 +42,9 @@ class CategoryController extends Controller
         }
         $typeid = (int) $setting;
 
-        if($typeid > 5 || $typeid < 1)
+        if ($typeid != 1) // if($typeid > 5 || $typeid < 1)
         {
-            return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
+            return redirect()->route('setting_name')->withInput()->with('error', "Master settings not listed");
         }
 
         $responses = DB::select("SELECT category_id as id, name, description FROM category WHERE is_deleted=0 and type_id=? order by category_id desc", [$typeid]);
@@ -60,7 +60,7 @@ class CategoryController extends Controller
         }
         $typeid = (int) $setting;
 
-        if($typeid > 5 || $typeid < 1)        
+        if ($typeid > 5 || $typeid < 1)
             return redirect()->route('setting_name')->withInput()->with('error', "Settings Name not listed");
 
         return view('admin.category.create')->with('typeid', $setting)->with('setting_name', $this->getMyList($typeid));
@@ -99,7 +99,7 @@ class CategoryController extends Controller
             $ress = DB::select("SELECT category_id FROM category WHERE is_deleted=0 and type_id=? and name=?", [$typeid, $name]);
             if ($ress != null) {
                 //return $ress;
-                return redirect()->route('setting.name.create',[$typeid])->withInput()->with('error', "Failed. Please use different name");
+                return redirect()->route('setting.name.create', [$typeid])->withInput()->with('error', "Failed. Please use different name");
             }
 
             $description = $request->body;
@@ -111,152 +111,115 @@ class CategoryController extends Controller
                 ['name' => $name, 'description' => $description, 'type_id' => $typeid, 'is_deleted' => 0]
             );
 
-            return redirect()->route('setting.name.index',[$typeid])->withInput()->with('success', "Added successfully");
+            return redirect()->route('setting.name.index', [$typeid])->withInput()->with('success', "Added successfully");
         } catch (\Exception $e) {
-            return redirect()->route('setting.name.create',[$typeid])->withInput()->with('error', "Failed. Please try again");
+            return redirect()->route('setting.name.create', [$typeid])->withInput()->with('error', "Failed. Please try again");
         }
     }
 
-
-    public function show($setting, $name) {
+    public function edit($setting, $name)
+    {
+        //validation
         if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
-            return redirect()->route('setting_name')->withInput()->with('error', "Invalid URL parameters.");
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
         }
-        $typeid = (int) $setting;
-        if (is_null($name) || empty($name) || !is_numeric($name)) {
-            return redirect()->route('setting.name.index',[$typeid])->withInput()->with('error', "Invalid URL parameters.");
-        }
-        $categoryId = (int) $name;
+        $typeId = (int) $setting;
 
-        $setting_name = "";
-        $setting_refId = 0;
-        if ($typeid == 4) {
-            $setting_name = "Expense";
-            $setting_refId = 2;
-        } else if ($typeid == 5) {
-            $setting_name = "Income";
-            $setting_refId = 3;
+        if ($typeId == 1) {
         } else {
-            return redirect()->route('setting.name.index', [$typeid])->withInput()->with('error', "Invalid Custom Reporting URL");
+            return redirect()->route('dashboard')->withInput()->with('error', "Settings Name not listed");
         }
 
-        //validating the custom report name
-        $responses = DB::select("select name from category where is_deleted=0 and type_id=? and category_id=?", [$typeid, $categoryId]);
-        if($responses == null)
-        {
-            return redirect()->route('setting.name.index',[$typeid])->withInput()->with('error', "Custom Reporting Name is not valid.");
+        //validation
+        if (is_null($name) || empty($name) || !is_numeric($name)) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
+        }
+        $category_id = (int) $name;
+
+        $response = DB::select("SELECT category_id as id, name, description FROM category WHERE is_deleted=0 and type_id=? and category_id=?", [$typeId, $category_id]);
+        if ($response == null) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Item not found.");
         }
 
-        $list = DB::select("SELECT category_id as id, name, description FROM category WHERE is_deleted=0 and type_id=? order by category_id desc", [$setting_refId]);
+        $categoryItem = (object) [];
+        $categoryItem->id = $response[0]->id;
+        $categoryItem->name = $response[0]->name;
+        $categoryItem->description = $response[0]->description;
 
-        $categorylist = DB::select("select category_id, name, description, category_list_id from category_list where category_id in (select category.category_id from category where type_id=?) and is_active=1", [$typeid]);
-
-        return view('admin.category.show', compact('typeid','categoryId','list','setting_name','categorylist'));
+        return view('admin.category.edit')->with('item', $categoryItem)->with('typeid', $typeId)->with('setting_name', $this->getMyList($typeId));
     }
 
-    public function edit($id)
+    public function update($setting, $name, Request $request)
     {
-        if ($id > 0) {
-            $response = DB::select("SELECT id, title,showInfront, stats, orderb FROM categories where isdeleted=0 and id=?", [$id]);
-            if ($response != null) {
-                $blogCategorys = new Category();
-                $blogCategorys->title = $response[0]->title;
-                $blogCategorys->showInfront = $response[0]->showInfront;
-                $blogCategorys->stats = $response[0]->stats;
-                $blogCategorys->orderb = $response[0]->orderb;
-                $blogCategorys->id = $id;
-
-                return view('admin.category.edit')->with('blogCategorys', $blogCategorys);
-            }
+        //validation
+        if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
         }
-        return redirect()->route('blog-category.index')->with('error', 'Category Not found');
-    }
+        $typeId = (int) $setting;
 
-    public function update(Request $request, $id)
-    {
+        if ($typeId == 1) {
+        } else {
+            return redirect()->route('dashboard')->withInput()->with('error', "Settings Name not listed");
+        }
+
+        //validation
+        if (is_null($name) || empty($name) || !is_numeric($name)) {
+            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
+        }
+        $category_id = (int) $name;
+
+
         $Validator = Validator::make(
             $request->all(),
             [
-                'title' => 'required|max:240',
-                'mmfile' => 'mimes:jpeg,png,bmp,tiff |max:4096 ',
-                'stats' => 'required|numeric',
-                'orderb' => 'required|numeric',
-                'showinfront' => 'required|numeric',
+                'name' => 'required|max:240',
+                'body' => 'max:240'
             ],
             $messages = [
-                'mmfile.required' => 'Please select image file.',
                 'required' => 'The :attribute field is required.',
-                'mimes' => 'Only jpeg, png, bmp,tiff are allowed.',
             ]
         );
 
-        $response = DB::select("SELECT orderb FROM categories where isdeleted=0 and id=?", [$id]);
+        if ($Validator->fails()) {
+            return redirect()->back()->withInput($request->input())->withErrors($Validator);
+        }
+
+        $response = DB::select("SELECT category_id as id, name, description FROM category WHERE is_deleted=0 and type_id=? and category_id=?", [$typeId, $category_id]);
         if ($response == null) {
-            return redirect()->route('blog-category.index')->with('error', 'Data not found. Error 2');
+            return redirect()->route('dashboard')->withInput()->with('error', "Item not found.");
         }
 
-        $blogCategorys = new Category();
-        $blogCategorys->title = $request->title;
-        $blogCategorys->showInfront = $request->showinfront;
-        $blogCategorys->stats = $request->stats;
-        $blogCategorys->orderb = $request->orderb;
-        $blogCategorys->isdeleted = 0;
-        $blogCategorys->id = $id;
+        $categoryItem = (object) [];
+        $categoryItem->category_id = $category_id;
+        $categoryItem->name = $request->name;
+        $description = $request->body;
 
-        $fileNameToStore = "";
-        //DB::beginTransaction();
-        if ($request->hasFile('mmfile')) {
-            // Get jst ext
-            $extension = $request->file('mmfile')->getClientOriginalExtension();
-            //$filesize = $request->file('mfile')->getClientSize();
-
-            // if ($filesize > 11534336) {
-            //     return redirect()->back()->withInput($request->input())->with('error', 'Please select file less than 11MB');
-            // }
-            if (
-                (strcasecmp($extension, 'png') == 0) ||
-                (strcasecmp($extension, 'jpg') == 0) ||
-                (strcasecmp($extension, 'bmp') == 0) ||
-                (strcasecmp($extension, 'jpeg') == 0) ||
-                (strcasecmp($extension, 'gif') == 0)
-            ) {
-                //Filename to store
-                $fileNameToStore = "" . time() . '.' . $extension;
-                //uplod image
-                $file = $request->file('mmfile');
-                $destinationPath = public_path('/uploads/');
-                $file->move($destinationPath, $fileNameToStore);
-            }
+        if (is_null($description) || empty($description)) {
+            $description = "";
         }
 
-        try {
-            DB::beginTransaction();
-            if ($fileNameToStore != "") {
-                DB::table('blog_images')->insert(['auth_id' => auth()->user()->id, 'blogCategory_id' => $blogCategorys->id, 'title' => $fileNameToStore, 'createdDate' => new DateTime()]);
-            }
+        $rows = DB::update('update category set name=?, description=?, type_id=? where category_id=?', [$categoryItem->name, $description, $typeId, $categoryItem->category_id]);
 
-            $rows = DB::update('update categories set title=?,showInfront=?,stats=?,orderb=?,created_at=?,updated_at=? where id=?', [$blogCategorys->title, $blogCategorys->showInfront, $blogCategorys->stats, $blogCategorys->orderb, new DateTime(), new DateTime(), $blogCategorys->id]);
-
-            if ($rows == 1) {
-                DB::commit();
-                return redirect()->route('blog-category.index')->with('success', 'Update Successfull');
-            } else {
-            }
-        } catch (\Exception $e) {
-            return redirect()->route('blog-category.index')->with('error', 'Update Unsuccessfull. Error 1');
+        if ($rows == 1) {
+            return redirect()->route('setting.name.index', [$typeId])->with('success', 'Update Successfull');
         }
 
-        return redirect()->route('blog-category.index')->with('error', 'Update Unsuccessfull');
+        return redirect()->route('setting.name.index', [$typeId])->with('error', 'Update Unsuccessfull');
     }
 
-    public function destroy($id)
+    public function destroy($setting, $name)
     {
-        $rows = DB::select("SELECT orderb FROM categories where isdeleted=0 and id=?", [$id]);
-        if ($rows != null) {
-            $row = DB::update("update categories set isdeleted=1,updated_at=? where id=?", [new DateTime(), $id]);
-            if ($row == 1) {
+        if (is_null($name) || empty($name) || !is_numeric($name)) {
+            return 0;
+        }
+        $category_id = (int) $name;
+
+        $rows = DB::select("SELECT * FROM category where is_deleted=0 and category_id=?", [$category_id]);
+        if($rows != null)
+        {
+            $row = DB::update("update category set is_deleted=1 where category_id=?", [$category_id]);
+            if ($row == 1)
                 return 1;
-            }
         }
         return 0;
     }

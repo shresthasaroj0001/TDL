@@ -34,16 +34,16 @@ crossorigin="anonymous"></script>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Period Name</td>
-                        <td>Month - Billing Period Name</td>
+                        <td>Category</td>
+                        <td>Item Category</td>
                         <td><a href="{{route('setting.name.index',[1])}}"><button class="btn btn-primary">Manage</button></a></td>
                     </tr>
                     <tr>
-                        <td>Expense Category</td>
-                        <td>Heading for Expenses like Bank, Utilities, Supplier Category</td>
+                        <td>Items</td>
+                        <td>Like Cups, plates</td>
                         <td><a href="{{route('setting.name.index',[2])}}"><button class="btn btn-primary">Manage</button></a></td>
                     </tr>
-                    <tr>
+                    {{-- <tr>
                         <td>Income Category</td>
                         <td>In Store, Online devices name</td>
                         <td><a href="{{route('setting.name.index',[3])}}"><button class="btn btn-primary">Manage</button></a></td>
@@ -57,7 +57,7 @@ crossorigin="anonymous"></script>
                         <td>Income Report</td>
                         <td>Heading for Reporting</td>
                         <td><a href="{{route('setting.name.index',[5])}}"><button class="btn btn-primary">Manage</button></a></td>
-                    </tr>
+                    </tr> --}}
                 </tbody>
             </table>
         </div>

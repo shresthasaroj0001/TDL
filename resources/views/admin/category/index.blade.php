@@ -1,10 +1,52 @@
 @extends('admin.master')
 @section('mycss')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 @endsection
 
 @section('myscript')
-    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+<script>
+    $(function(){
+    var table = $("#datatablesSimple").DataTable({
+    });
+    
+    $("#datatablesSimple").on("click", ".action-delete", function () {
+    // $("#mytbl .action-delete").click(function () {
+    button = null;
+    button = $(this);
+    //(button.attr('rowid'));
+    
+    var result = confirm("Are You Sure You want to delete ?");
+    if (result) {
+    var i = $('#_currentUrl').val() + "/" + button.attr("rowid");
+    $.ajax({
+    headers: {
+    "X-CSRF-TOKEN": $("#tokken").val(),
+    },
+    url: i,
+    type: "Delete",
+    success: function (ddata) {
+    if (ddata == 0) {
+    alert("Internal Error");
+    return false;
+    }
+    
+    if (ddata == 1) {
+    let currentTR = button.closest("tr");
+    currentTR.addClass("Row4Delete");
+    if (currentTR.hasClass("child")) {
+    prevTR = currentTR.prev();
+    prevTR.addClass("Row4Delete");
+    }
+    
+    $(".Row4Delete").remove();
+    }
+    },
+    });
+    }
+    });
+    });
+</script>
 @endsection
 
 @section('bodycontent')
@@ -21,8 +63,9 @@
             <div class="row">
                 <div class="col-md-6"> <i class="fas fa-table me-1"></i>
                     List of {{$setting_name}}</div>
-                <div class="col-md-6" style="text-align: right;">  
-                    <a href="{{route('setting.name.create',[$typeid])}}"><button class="btn btn-primary">Add New</button></a>
+                <div class="col-md-6" style="text-align: right;">
+                    <a href="{{route('setting.name.create',[$typeid])}}"><button class="btn btn-primary">Add
+                            New</button></a>
                 </div>
             </div>
         </div>
@@ -43,11 +86,11 @@
                         <td>{{$item->name}}</td>
                         <td>{{$item->description}}</td>
                         <td>
-                            <button class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>
-                            @if ($typeid > 3)
-                            <a href="{{route('setting.name.show',[$typeid, $item->id])}}">
-                                <button class="btn btn-primary">Manage</button></a>
-                            @endif
+                            <a href="{{route('setting.name.edit',[$typeid, $item->id])}}">
+                                <button class="btn btn-primary"><i class="fa fa-pen"></i></button>
+                            </a>
+                            <button class="btn btn-danger action-delete" rowid="{{$item->id}}"><i
+                                    class="fa fa-trash"></i></button>
                         </td>
                     </tr>
                     @endforeach
@@ -56,4 +99,8 @@
         </div>
     </div>
 </div>
+
+<input type="hidden" name="_token" id="tokken" value="{{ csrf_token() }}">
+<input type="hidden" name="_currentUrl" id="_currentUrl" value="{{ url()->current() }}">
+
 @endsection

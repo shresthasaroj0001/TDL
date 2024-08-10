@@ -8,7 +8,6 @@
 @section('myscript')
 <script src="/b/js/toastr.js"></script>
 
-<script src="/b/js/scripts.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous">
 </script>
 <script src="/b/assets/demo/chart-area-demo.js"></script>
@@ -38,7 +37,7 @@ toastr.options = {
 }
 
 
-$('#toastrOptions').text(toastr["success"]("My name is Inigo Montoya. You killed my father. Prepare to die!"));
+// $('#toastrOptions').text(toastr["success"]("My name is Inigo Montoya. You killed my father. Prepare to die!"));
 
 
 });

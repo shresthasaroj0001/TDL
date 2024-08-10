@@ -12,6 +12,9 @@ crossorigin="anonymous"></script>
 @section('bodycontent')
 <div class="container-fluid px-4">
     <br>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+    </ol>
     @include('admin.messages')
     <div class="card mb-4">
         <div class="card-header">
@@ -33,12 +36,8 @@ crossorigin="anonymous"></script>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Expense List</td>
-                        <td><a href="{{route('setting.list.index',[2])}}"><button class="btn btn-danger">Manage</button></a></td>
-                    </tr>
-                    <tr>
-                        <td>Income</td>
-                        <td><a href="{{route('setting.list.index',[3])}}"><button class="btn btn-danger">Manage</button></a></td>
+                        <td>Item List</td>
+                        <td><a href="{{route('setting.list.index',[1])}}"><button class="btn btn-primary">Manage</button></a></td>
                     </tr>
                 </tbody>
             </table>

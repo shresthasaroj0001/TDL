@@ -1,15 +1,15 @@
 ---
 deployment:
       tasks:
-          - export DEPLOYPATH=/home3/shresthasarojcom/test/    # deploypath
-          - export PUBLICPATH=/home3/shresthasarojcom/test.shrestha-saroj.com.np/
+          - export DEPLOYPATH=/home/themo841/order/    # deploypath
+          - export PUBLICPATH=/home/themo841/order.themomostation.ca/
 
           - /bin/cp -r * $DEPLOYPATH                    
-          - /bin/rm -Rf /home3/shresthasarojcom/test/public
+          - /bin/rm -Rf /home/themo841/test/public
 
-          - /bin/cp -r /home3/shresthasarojcom/test_env/.env $DEPLOYPATH  
+          - /bin/cp -r /home/themo841/test_env/.env $DEPLOYPATH  
 
-          - /bin/rm -Rf /home3/shresthasarojcom/test.shrestha-saroj.com.np/
+          - /bin/rm -Rf /home/themo841/test.shrestha-saroj.com.np/
           - /bin/cp -r public $PUBLICPATH
           
-          - /bin/cp -r /home3/shresthasarojcom/test_env/index.php $PUBLICPATH  
+          - /bin/cp -r /home/themo841/test_env/index.php $PUBLICPATH  

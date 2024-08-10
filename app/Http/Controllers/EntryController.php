@@ -8,6 +8,7 @@ use DateTime;
 use DB;
 use Validator;
 use Carbon;
+use Jenssegers\Agent\Facades\Agent;
 
 class EntryController extends Controller
 {
@@ -18,257 +19,276 @@ class EntryController extends Controller
 
     private function getMyList($typeid)
     {
-        if ($typeid == 2)
-            return "Expenses";
-        else if ($typeid == 3)
-            return "Income";
+        if ($typeid == 1)
+            return "Item";
         else
             return "Invalid";
     }
 
-    public function index($setting, Request $request)
+    public function index($item, Request $request)
     {
-        //validation
-        if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
-            return redirect()->route('entry_list')->withInput()->with('error', "Invalid URL parameters.");
-        }
-        $typeId = (int) $setting;
-
-        if ($typeId == 2 || $typeId == 3){}else
-        {
-            return redirect()->route('dashboard')->withInput()->with('error', "Category not listed");
-        }
-
-        //Query String filtering
-        //check the period id
-        $periodId = 0;
-        if ($request->has('period')) {
-            $var = $request->input('period');
-
-            if (is_null($var) || !is_numeric($var)) {
-                $var = 0;
-            }
-            $periodId = (int) $var;
-        }else{
-            // return "hi";
-            $periodId = 999;
-        }
-
-        $categoryId = 0;
-        if ($request->has('category_id')) {
-            $var = $request->input('category_id');
-            
-            if (is_null($var) || empty($var) || !is_numeric($var)) {
-                $var = 0;
-            }
-            $categoryId = (int) $var;
-        }
-
-        //find the category list
-        $categoryListId = 0;
-        if ($request->has('category_list_id')) {
-            $var = $request->input('category_list_id');
-            
-            if (is_null($var) || empty($var) || !is_numeric($var)) {
-                $var = 0;
-            }
-            $categoryListId = (int) $var;
-        }
-
-        $queryStringMessage = "";
-        //logic for period
-        //if 999, show latest 
-        //else set 0 and display all
-        $periods = DB::select("select category_id as id, name, description from category as tblPeriod where type_id=1 and is_deleted=0 order by category_id desc");
-
-        if ($periods != null) {
-            $periodIdOnly = array_column($periods, 'id');  //Only take id column from the list and form another array
-            $found_key = array_search($periodId, $periodIdOnly);
-            
-            if (!is_numeric($found_key)) {
-                $queryStringMessage = "Billing Period not found.<br>";
-                
-                if ($periodId == 999) // for latest selection
-                {
-                    $periodId = $periods[0]->id;
-                }
-            }
-        } else {
-            return redirect()->route('setting.name.create', [1])->withInput()->with('error', "Failed. Please create billing period");
-        }
-
-        $categories = DB::Select("select category_id as id, name, description from category where type_id=? and is_deleted=0", [$typeId]);
-        if ($categories != null) {
-            //return $ress;
-            $categoriesOnly = array_column($categories, 'id');  //Only take id column from the list and form another array
-            
-            $found_key = array_search($categoryId, $categoriesOnly);
-            if (!is_numeric($found_key)) {
-                if (empty($queryStringMessage)) {
-                    $queryStringMessage = "Category not found";
-                } else {
-                    $queryStringMessage = $queryStringMessage . "Category not found";
-                }
-                $categoryId = 0;
-            }
-        } else {
-            return redirect()->route('setting.name.create', [$categoryId])->withInput()->with('error', "Failed. Please create " . $this->getMyList($typeId) . " category");
-        }
-
-        $sql = "select category_list_id as id, name, description from category_list where category_id IN (SELECT category_id from category where category.type_id=".$typeId.") and is_active=1";
-
-        if($categoryId != 0)
-            $sql .= " and category_id=".$categoryId;
-
-        $sql .= " order by category_list_id desc, is_monthly";
-
-        $categoryLists = DB::select($sql);
-        if ($categoryLists != null) {
-            if ($categoryListId != 0) {
-                $categoriesOnly = array_column($categoryLists, 'id');  //Only take id column from the list and form another array
-                $found_key = array_search($categoryListId, $categoriesOnly);
-
-                if (!is_numeric($found_key)) {
-                    $msg = $this->getMyList($typeId) . " not found in List.<br>";
-                    if (empty($queryStringMessage)) {
-                        $queryStringMessage = $msg;
-                    } else {
-                        $queryStringMessage .= " " . $msg;
-                    }
-                    $categoryListId = 0;
-                }
-            }
-        } else {
-            return redirect()->route('setting.list.create', [$categoryId])->withInput()->with('error', "Failed. Please create " . $this->getMyList($categoryId) . " headings");
-        }
-
-        $sql = 'With categoryList As ( select category.name as catName, category.category_id as catid, category_list.name, category_list.description, is_monthly, category_list_id from category_list inner join category on category_list.category_id=category.category_id where category.type_id='.$typeId.' ) select tblPeriod.category_id as tblPeriodId, tblPeriod.name as periodName, categoryList.catName, categoryList.catid, categoryList.name as catlist,categoryList.category_list_id, tbl_entry.entry_id, tbl_entry.ref_no, tbl_entry.created_at,tbl_entry.hst_amt,tbl_entry.total_amt,tbl_entry.description from tbl_entry inner join category as tblPeriod on tbl_entry.period_id=tblPeriod.category_id left join categoryList on tbl_entry.category_list_id=categoryList.category_list_id where ';
-
-        $sql .= ' tbl_entry.is_deleted=0';
-        if($periodId !=0)
-        {
-            $sql .= ' and tbl_entry.period_id='.$periodId;
-        }
-        if($categoryId !=0)
-        {
-            $sql .= ' and categoryList.catid='.$categoryId;
-        }
-        if($categoryListId !=0)
-        {
-            $sql .= ' and tbl_entry.category_list_id='.$categoryListId;
-        }
-
-        $sql .= ' order by tbl_entry.entry_id desc';
+        // $insert_data = [];
+        // for ($i = 1; $i <= 54; $i++) {
         
-        $responses = DB::select($sql);
+        //     for ($j = 1; $j <= 15; $j++)
+        //     {
+        //         $k = rand(1,106);
+        //         if($i == $k)
+        //             continue;
+        //         $data = [
+        //             'entry_id'                   => $i,
+        //             'category_list_id'                  => $k, 
+        //             'quantity'               => rand(1, 9),
+        //             'rate' => rand(10.0, 100.0),
+        //             'created_date' => gmdate("Y/m/d H:i:s")
+        //         ];
+        //         $insert_data[] = $data;
+        //     }
+        // }
+        // $insert_data = collect($insert_data); // Make a collection to use the chunk method
+        // $chunks = $insert_data->chunk(500);
+        // foreach ($chunks as $chunk)
+        // {
+        //    DB::table('tbl_entry')->insert($chunk->toArray());
+        // }
+        // return "hello";
 
-        //for total
-        if($responses != null)
-        {
-            $hst_sum=0;
-            $total_sum=0;
-            foreach ($responses as $row) {
-                $hst_sum += (float) $row->hst_amt;
-                $total_sum+= (float) $row->total_amt;
-            }
-        }
-
-
-        return view('admin.entry.index')->with('list', $responses)->with('typeId', $typeId)->with('categoryName', $this->getMyList($typeId))->with('periods',$periods)->with('periodId',$periodId)->with('categoryId',$categoryId)->with('categories',$categories)->with('categoryListId',$categoryListId)->with('categoryLists',$categoryLists)->with("hst_sum",$hst_sum)->with("total_sum",$total_sum);
-    }
-
-    public function create($setting)
-    {
         //validation
-        if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
+        if (is_null($item) || empty($item) || !is_numeric($item)) {
             return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
         }
-        $categoryId = (int) $setting;
+        $entry_id = (int) $item;
 
-        if ($categoryId == 2)
-            $name = "Expense";
-        else if ($categoryId == 3)
-            $name = "Income";
-        else {
-            return redirect()->route('dashboard')->withInput()->with('error', "Settings Name not listed");
-        }
+        $storeId = 0;
+        if ($request->has('store')) {
+            $var = $request->input('store');
 
-        $periods = DB::select("select category_id as id, name, description from category as tblPeriod where type_id=1 and is_deleted=0 order by category_id desc");
-        if ($periods != null) {
+            if (is_null($var) || !is_numeric($var)) {
+                return redirect()->route('dashboard')->with('error','Store selection not valid');
+            }
+            $storeId = (int) $var;
+            if($storeId == 1 || $storeId == 2)
+            {}
+            else
+            {
+                return redirect()->route('dashboard')->with('error','Store selection not valid');
+            }
         }else{
-            return redirect()->route('setting.name.create', [1])->withInput()->with('error', "Failed. Please create billing period");
+            return redirect()->route('dashboard')->with('error','Store selection not found');
         }
 
-        $ress = DB::select("select category_list_id as id, name, description from category_list where category_id IN (SELECT category_id from category where category.type_id=?) and is_active=1 order by category_list_id desc, is_monthly",[$categoryId]);
-        if ($ress != null) {
-            //return $ress;
+        $responses = DB::select("select order_placed from entry_header where is_deleted=0 and store_id=? and entry_id = ?", [$storeId, $entry_id]);
+            if ($responses == null) {
+                return redirect()->route('dashboard')->with('error', "Invalid input. Pending order list does not exist");
+            } 
+            $order_placed = $responses[0]->order_placed;
+        
+
+        // else {
+        //     if ($responses[0]->order_placed == 1) {
+        //         return redirect()->route('dashboard')->with('error', "Order already marked completed");
+        //     }
+        // }
+
+        //obtain previous placed order detail
+        $previousOrderResponses = DB::select("select entry_id, DATE_FORMAT(entry_date, '%b-%e : %a') 'OrderDate'  from entry_header where is_deleted=0 and entry_header.order_placed=1 and entry_header.store_id=".$storeId." and entry_header.entry_id < ".$entry_id." order by entry_id desc limit 2");
+
+        $EntryIdsToQuery = array();
+        array_push($EntryIdsToQuery, $entry_id);
+        if ($previousOrderResponses != null) {
+            foreach ($previousOrderResponses as $prevOrderInfo) {
+                array_push($EntryIdsToQuery, $prevOrderInfo->entry_id);
+            }
+        }
+
+        $sql = "WITH productlist AS (SELECT SUBSTRING(category_list.NAME,1,20) as 'NAME', category_list.description, category.NAME AS category_name, category_list.price, category_list.hst_enforced, category_list.category_list_id FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category_list.is_deleted = 0 AND category.is_deleted = 0 AND category.type_id = 1), rankTable AS (SELECT productlist.category_list_id, sum(tbl_entry.quantity) as rank from productlist left join tbl_entry on productlist.category_list_id=tbl_entry.category_list_id left join entry_header on tbl_entry.entry_id=entry_header.entry_id And entry_header.is_deleted=0 And entry_header.order_placed=1 group by productlist.category_list_id ), itemordered AS (SELECT category_list_id, tbl_entry.quantity, tbl_entry_id, entry_id FROM tbl_entry where entry_id in (".implode(",", $EntryIdsToQuery).") ) SELECT product.*, ";
+        
+        $sql .= "COALESCE(SUM(CASE WHEN entry_id = ".$entry_id." THEN quantity END),0) AS quantity, COALESCE(MAX(CASE WHEN entry_id = ".$entry_id." THEN tbl_entry_id END),0) AS tbl_entry_id, rank ";
+        
+        if ($previousOrderResponses != null) {
+            foreach ($previousOrderResponses as $index=>$prevOrderInfo) {
+                $prevEntryId = $prevOrderInfo->entry_id;
+                $prevEntryId = htmlspecialchars($prevEntryId); // Sanitize input to avoid SQL injection
+                $sql .= ", COALESCE(SUM(CASE WHEN entry_id = ".$prevEntryId." THEN quantity END),'') AS item".($index+1);
+            }
+        }
+ 
+        $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, rank order by rankTable.rank";
+
+        //return $sql;
+        //CREATE INDEX idx_tbl_entry_entry_category ON tbl_entry(entry_id, category_list_id);
+
+        $ItemList = DB::SELECT($sql);
+        if(Agent::isMobile())
+        {
+            return view('admin.entry.index2')->with('order_placed',$order_placed)->with('itemlist', $ItemList)->with('entry_id',$entry_id)->with('previousOrderResponses', $previousOrderResponses)->with('storeId',$storeId);
         }else{
-            return redirect()->route('setting.list.create', [$categoryId])->withInput()->with('error', "Failed. Please create ".$name." category");
+            return view('admin.entry.index')->with('order_placed',$order_placed)->with('itemlist', $ItemList)->with('entry_id',$entry_id)->with('previousOrderResponses', $previousOrderResponses)->with('storeId',$storeId);
         }
 
-        return view('admin.entry.create')->with('categoryId', $categoryId)->with('categoryName', $name)->with('periods',$periods)->with('list',$ress);
+    }
+
+    public function create($id, Request $request)
+    {
+        $storeId = 0;
+        if ($request->has('store')) {
+            $var = $request->input('store');
+
+            if (is_null($var) || !is_numeric($var)) {
+                return redirect()->route('dashboard')->with('error','Store selection not valid');
+            }
+            $storeId = (int) $var;
+            if($storeId == 1 || $storeId == 2)
+            {}
+            else
+            {
+                return redirect()->route('dashboard')->with('error','Store selection not valid');
+            }
+        } else {
+            return redirect()->route('dashboard')->with('error','Store selection not found');
+        }
+
+        $responses = DB::Select("select order_placed, entry_id from entry_header where is_deleted=0 and store_id=? order by entry_id desc limit 1",[$storeId]);
+        if ($responses == null) {
+            return redirect()->route('entry-header.create',['store'=>$storeId]);//->with('error', "Internal error. Record not found");
+        } else {
+            if ($responses[0]->order_placed == 1) {
+                return redirect()->route('dashboard')->with('error', "You do not have pending order. Please create a new order");
+            }else{
+                return redirect()->route('entry.item.index',['id'=>$responses[0]->entry_id, 'store'=> $storeId]);
+            }
+        }
+    }
+
+    public function preview($id)
+    {
+        $entry_id = (int) $id;
+
+        $sql="WITH orderItems AS(select category_list_id, quantity, rate from tbl_entry where tbl_entry.entry_id=".$entry_id."), OrderItemsWithCategory as ( SELECT category_list.NAME, category_list.description, category.NAME AS category_name, category_list.hst_enforced, category_list.category_list_id, orderItems.quantity*orderItems.rate as 'subTotal', CASE WHEN hst_enforced = 1 THEN orderItems.quantity * orderItems.rate * 0.13 ELSE 0 END AS 'hst_calculated', orderItems.quantity, orderItems.rate FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category.type_id = 1 INNER JOIN orderItems on category_list.category_list_id=orderItems.category_list_id) Select NAME, cast(rate as decimal) as 'rate', category_list_id, category_name, description, hst_calculated, hst_enforced, quantity, subtotal from OrderItemsWithCategory order by category_name";
+
+        $responses = DB::Select($sql);
+        $responseObject = [];
+        $totalItem=0;
+        $subTotal=0;
+        $HSTTotal=0;
+
+        foreach ($responses as $result) {
+            $object = (object) [
+            'NAME' => $result->NAME,
+            'description' => $result->description,
+            'category_name' => $result->category_name, 
+            'rate' => (float) $result->rate,
+            'category_list_id' => (float) $result->category_list_id,
+            'hst_calculated' => (float) $result->hst_calculated,
+            'hst_enforced' => (int) $result->hst_enforced,
+            'quantity' => (float) $result->quantity,
+            'subTotal' => (float) $result->subTotal
+            ];
+
+            $totalItem +=1;
+            $subTotal +=(float) $result->subTotal;
+            $HSTTotal += (float) $result->hst_calculated;
+            
+            array_push($responseObject, $object);
+        }
+
+        return $responseObject;
+    }
+
+    public function next($id)
+    {
+        $entry_id = (int) $id;
+
+        $sql="WITH orderItems AS(select category_list_id, quantity, rate from tbl_entry where tbl_entry.entry_id=".$entry_id."), OrderItemsWithCategory as ( SELECT category_list.NAME, category_list.description, category.NAME AS category_name, category_list.hst_enforced, category_list.category_list_id, orderItems.quantity*orderItems.rate as 'subTotal', CASE WHEN hst_enforced = 1 THEN orderItems.quantity * orderItems.rate * 0.13 ELSE 0 END AS 'hst_calculated', orderItems.quantity, orderItems.rate FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category.type_id = 1 INNER JOIN orderItems on category_list.category_list_id=orderItems.category_list_id) Select NAME, cast(rate as decimal) as 'rate', category_list_id, category_name, description, hst_calculated, hst_enforced, quantity, subtotal from OrderItemsWithCategory order by category_name";
+
+        $responses = DB::Select($sql);
+        $responseObject = [];
+        $totalItem=0;
+        $subTotal=0;
+        $HSTTotal=0;
+
+        foreach ($responses as $result) {
+            $object = (object) [
+            'NAME' => $result->NAME,
+            'description' => $result->description,
+            'category_name' => $result->category_name, 
+            'rate' => (float) $result->rate,
+            'category_list_id' => (float) $result->category_list_id,
+            'hst_calculated' => (float) $result->hst_calculated,
+            'hst_enforced' => (int) $result->hst_enforced,
+            'quantity' => (float) $result->quantity,
+            'subTotal' => (float) $result->subTotal
+            ];
+
+            $totalItem +=1;
+            $subTotal +=(float) $result->subTotal;
+            $HSTTotal += (float) $result->hst_calculated;
+            
+            array_push($responseObject, $object);
+        }
+
+        return view('admin.entry.next')->with('itemlist', $responseObject)->with('entry_id',$entry_id)->with('totalItem', $totalItem)->with('subTotal',$subTotal)->with('HSTTotal',$HSTTotal);
+
     }
 
     public function store($setting, Request $request)
     {
-        if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
-            return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
-        }
-        $categoryId = (int) $setting;
-
-        if ($categoryId == 2 || $categoryId == 3) {
-        } else {
-            return redirect()->route('setting.list.index', [$categoryId])->withInput()->with('error', "Category not listed");
-        }
-
-        $Validator = Validator::make(
-            $request->all(),
-            [
-                'category_list_id' => 'required|numeric',
-                'period' => 'required|numeric',
-                'hst' => 'required|numeric|min:0',
-                'total' => 'required|max:240|gte:hst',
-                'body' => 'max:240'
-            ],
-            $messages = [
-                'required' => 'The :attribute field is required.',
-            ]
-        );
-
-        if ($Validator->fails()) {
-            return redirect()->back()->withInput($request->input())->withErrors($Validator);
-        }
-
         try {
-
-            // $name = $request->name;
-            // $ress = DB::select("SELECT name FROM category_list WHERE category_id=? and name=?", [$categoryId, $name]);
-            // if ($ress != null) {
-            //     //return $ress;
-            //     return redirect()->route('setting.list.create', [$categoryId])->withInput()->with('error', "Failed. Please use different name");
-            // }
-
-            $description = $request->body;
-            if (is_null($description) || empty($description)) {
-                $description = "";
-            }
-            $ref_no = $request->ref_no;
-            if (is_null($ref_no) || empty($ref_no)) {
-                $ref_no = "";
+            if (is_null($setting) || empty($setting) || !is_numeric($setting)) {
+                return redirect()->route('dashboard')->withInput()->with('error', "Invalid URL parameters.");
             }
 
+            $entry_id = (int) $setting;
+
+            $responses = DB::select("select order_placed from entry_header where is_deleted=0 and entry_id = ?", [$entry_id]);
+            if ($responses == null) {
+                return redirect()->route('entry.item.store', [$entry_id])->with('error', "Invalid input. Pending order list does not exist");
+            }
+
+            $cart_items =(int) $request->cart_total_items;
+            $hst_price =(float) $request->hst_price;
+            $total_price =(float) $request->total_price;
+
+            $price = (float) $request->price;
             $category_list_id = $request->category_list_id;
-            $period = $request->period;
-            $hst = $request->hst;
-            $total = $request->total;
-            $utcTimenow = gmdate("Y/m/d H:i:s");
+            $entry_item_id = (int) $request->entry_item_id;
+            $new_quantity = (float) $request->new_quantity;
 
-            DB::table('tbl_entry')->insert(
-                // entry_id`, `period_id`, `category_list_id`, `ref_no`, `created_at`, `hst_amt`, `total_amt`, `description`, `is_deleted
-                ['period_id' => $period, 'description' => $description, 'category_list_id' => $category_list_id, 'ref_no' => $ref_no, 'hst_amt'=>$hst ,'total_amt'=>$total ,'is_deleted' => 0, 'created_at' => $utcTimenow]
-            );
+            $returnVal=-1;
+            DB::beginTransaction();
+                $row = DB::update("update entry_header set cart_items=?, total_price=?, hst_price=?, updated_at=? where entry_id=?", [$cart_items, $total_price, $hst_price, gmdate("Y/m/d H:i:s"), $entry_id]);
+                // if ($row != 1)
+                //     return -1;
 
-            return redirect()->route('entry.item.index', ['setting' => $categoryId,'period'=>$period])->withInput()->with('success', "Added successfully");
+                if ($new_quantity > 0) {
+                    if ($entry_item_id == 0) {
+                        $id = DB::table('tbl_entry')->insertGetId(
+                            ['entry_id' => $entry_id, 'category_list_id' => $category_list_id, 'quantity' => $new_quantity, 'created_date' => gmdate("Y/m/d H:i:s"), 'rate' => $price]
+                        );
+
+                        $returnVal = $id; //tbl_entry_id
+                    } else {
+                        $row = DB::update("update tbl_entry set quantity=?, rate=? where tbl_entry_id=? and entry_id=? and category_list_id=?", [$new_quantity, $price, $entry_item_id, $entry_id, $category_list_id]);
+                        if ($row == 1)
+                            $returnVal= 0;
+                        else
+                            $returnVal= -1;
+                    }
+                } else {
+                    if ($entry_item_id > 0) {
+                        $row = DB::delete('delete from tbl_entry where tbl_entry_id=?', [$entry_item_id]);
+                        if ($row == 1)
+                        $returnVal= 0;
+                        else
+                        $returnVal= -1;
+                    } else {
+                        //do nothing
+                        //no a possible case
+                        $returnVal= 0;
+                    }
+                }
+            DB::commit();
+            return $returnVal;
         } catch (\Exception $e) {
             return $e;
             return redirect()->route('entry.item.create', [$categoryId])->withInput()->with('error', "Failed. Please try again");
@@ -303,7 +323,7 @@ class EntryController extends Controller
 
                 $category_list_ids = array_column($categoryLists, 'id');  //Only take id column from the list and form another array
                 $found_key = array_search($response[0]->category_list_id, $category_list_ids);
-                
+
                 if (!is_numeric($found_key)) {
                     return "Entry not match with category";
                 }
