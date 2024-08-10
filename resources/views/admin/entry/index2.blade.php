@@ -137,7 +137,21 @@
         padding-right: 10px !important;
     }
 
-    #mytable tr th:not(:first-child) {
+    #mytable thead tr th:not(:first-child) {
+        /* text-align: right !important; */
+    }
+
+    th.dt-type-numeric {
+        padding-right: 1px !important;
+        padding-left: 1px !important;
+        text-align: center !important;
+    }
+
+    td:not(:first-child) {
+        text-align: center !important;
+    }
+
+    th:not(:first-child) {
         text-align: center !important;
     }
 
