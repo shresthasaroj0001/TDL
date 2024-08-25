@@ -2,26 +2,87 @@
 @section('mycss')
 
 <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <style>
     div.dt-container div.dt-layout-row {
         display: inline-table;
     }
 </style>
+{{-- https://www.daterangepicker.com/#config --}}
 @endsection
 
 @section('myscript')
 <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.js"></script>
+
 <script>
     $(function () {
         $("#example1").DataTable({
-            "order": [4,'desc'],
+            "order": [0,'desc'],
             "ordering": true,
             columnDefs: [
                 { targets: "hiddenCols", visible: false },
                 { targets: "RestrictOrdering", orderable: false },
             ],
         });
+
+        
+
+        // $("#modal-entry").modal("show");
+
+        $('input[name="birthday"]').daterangepicker({
+            singleDatePicker: true,
+            showDropdowns: true,
+            "locale": {
+                "format": "YYYY-MM-DD"
+            },
+            maxDate : moment(),
+            //  maxYear: parseInt(moment().format('YYYY'),10)
+        });
+
     });
+
+    $('input[name="birthday"]').on('apply.daterangepicker', function(ev, picker) {
+    //do something, like clearing an input
+        var newDate = picker.startDate.format('YYYY-MM-DD');
+        var $this = $(this);
+        var rowId = $this.data('entry-id');
+        // console.log(rowId);
+        // console.log("--------");
+        
+        $.ajax({
+            headers: {
+                "X-CSRF-TOKEN": $("#tokken").val(),
+            },
+            url: $('#_currentUrl').val(),
+            type: "POST",
+            data: {
+                entry_id: rowId,
+                new_date : newDate
+            },
+            success: function (ddata) {
+                console.log(ddata);
+                if(ddata == 0)
+            {
+                alert('Date updates success');
+                location.reload();
+            }
+
+            },
+            beforeSend: function () {
+                $.blockUI();
+            },
+            complete: function () {
+                $.unblockUI();
+            },
+            fail: function (ddata) {
+                alert("Error while processing your request");
+            },
+        });
+    });
+
 </script>
 @endsection
 
@@ -50,7 +111,9 @@
                         <th>Store</th>
                         <th>Subtotal</th>
                         <th>HST</th>
-                        <th class="hiddenCols">-</th>
+                        <th>Update Date</th>
+                        <th class="RestrictOrdering">-</th>
+                        <th class="hiddenCols RestrictOrdering">-</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,7 +121,7 @@
                     <tr>
                         <td>
                             <a href="{{route('entry-header.edit',['id'=>$item->entry_id, 'store'=>$item->store_id])}}">
-                                {{$item->entry_date}}</a>
+                                {{$item->formatted_entry_date}}</a>
                         </td>
                         <td>
                             @if ($item->store_id == 1)
@@ -71,12 +134,27 @@
                         </td>
                         <td>{{$item->total_price}}</td>
                         <td>{{$item->hst_price}}</td>
+                        <td>
+                            <input type="text" name="birthday" value="{{$item->entry_date}}"
+                                data-entry-id="{{ $item->entry_id }}" />
+                        </td>
+                        <td>
+                            <button class="btn btn-primary action-delete" rowid="{{$item->entry_id}}"><i
+                                    class="fa fa-pen" aria-hidden="true"></i></button>
+                            <button class="btn btn-danger action-delete" rowid="{{$item->entry_id}}"><i
+                                    class="fa fa-trash"></i></button>
+                        </td>
                         <td>{{$item->entry_id}}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
+
+        <input type="hidden" name="_token" id="tokken" value="{{ csrf_token() }}">
+        <input type="hidden" name="_currentUrl" id="_currentUrl" value="{{ url()->current() }}">
+
     </div>
+
 </div>
 @endsection

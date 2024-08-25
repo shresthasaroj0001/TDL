@@ -29,6 +29,8 @@
     }
 
     .editable-input {
+         /* Makes the input take full width on small screens */
+        box-sizing: border-box; /* Ensures padding doesn't affect total width */
         /* width: 50px; */
         /* Adjust based on your needs */
     }
@@ -71,11 +73,6 @@
         cursor: pointer;
     }
 
-    .number {
-        margin: 0.5px;
-        /* width: 20px !important;    		 */
-    }
-
     .minus,
     .plus {
         width: 25px;
@@ -87,6 +84,7 @@
         display: inline-block;
         vertical-align: middle;
         text-align: center;
+        margin: 1px;
     }
 
     input {
@@ -98,6 +96,12 @@
         border-radius: 4px;
         display: inline-block;
         vertical-align: middle;
+    }
+
+    .number {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
     }
 
     td.dt-type-numeric {
@@ -149,10 +153,12 @@
 
     td:not(:first-child) {
         text-align: center !important;
+        padding: 1px !important;
     }
 
     th:not(:first-child) {
         text-align: center !important;
+        padding: 1px !important;
     }
 
 </style>
@@ -233,7 +239,7 @@
                                 <th>Name</th>
                                 <th>Category</th>
                                 <th class="RestrictOrdering">Price</th>
-                                <th class="hiddenCols">lastOrderedDate</th>
+                                <th class="hiddenCols">Rank</th>
                                 <th class="hiddenCols">Quantity</th>
                                 <th class="RestrictOrdering">Quantity</th>
                                 <th class="hiddenCols">HST</th>
@@ -259,15 +265,12 @@
                                 <td>{{$item->price}}</td>
                                 <td>{{$item->rank}}</td>
                                 <td class="qty">{{$item->quantity}}</td>
-                                <td class="qtytd" style="padding-left: 0px; padding-right: 0px; margin: 0px;">
+                                <td class="qtytd" style="padding-left: 0px; padding-right: 0px;">
                                     <div class="number" style="">
                                         <span class="minus">-</span>
                                         <input type="text" class="editable-input" value="{{$item->quantity}}" readonly />
                                         <span class="plus">+</span>
                                     </div>
-                                    {{-- <i class="fa fa-minus-square faa-minus" aria-hidden="true"></i>
-                                    <span class="editable-input">{{$item->quantity}}</span>
-                                    <i class="fa fa-plus-circle faa-plus" aria-hidden="true"></i> --}}
                                 </td>
                                 <td>{{$item->hst_enforced}}</td>
                                 <td>{{$item->tbl_entry_id}}</td>

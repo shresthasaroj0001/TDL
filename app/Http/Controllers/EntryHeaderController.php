@@ -12,9 +12,29 @@ class EntryHeaderController extends Controller
 {
     public function index()
     {
-        $responses = DB::select("select entry_id, store_id, DATE_FORMAT(entry_date, '%Y-%b-%e : %a') AS entry_date, total_price, hst_price from entry_header where is_deleted=0 and order_placed=1");
-
+        $responses = DB::select("select entry_id, store_id, DATE_FORMAT(entry_date, '%Y-%b-%e : %a') AS formatted_entry_date, entry_date, total_price, hst_price from entry_header where is_deleted=0 and order_placed=1");
         return view('admin.entry_header.index')->with('list', $responses);
+    }
+
+    //update date of entry header table
+    public function updateDate(Request $request)
+    {
+        $entryId = $request->entry_id;
+        if (is_null($entryId) || empty($entryId) || !is_numeric($entryId)) {
+            return 1;
+        }
+
+        $new_date = $request->new_date;
+        if (is_null($new_date) || empty($new_date)) {
+            return 1;
+        }
+
+        $row = DB::update("update entry_header set entry_date = ? where entry_id=?", [$new_date, $entryId]);
+        if ($row == 1) {
+            return 0;
+        }else{
+            return 1;
+        }
     }
 
     public function select(Request $request)  {

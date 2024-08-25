@@ -18,6 +18,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/setting-list', 'CategoryListController@indexx')->name('setting_list');
     
     Route::get('entry-header/index', 'EntryHeaderController@index')->name('entry-header.index');
+    Route::post('entry-header/index', 'EntryHeaderController@updateDate');
     Route::get('entry-header/{id}/edit', 'EntryHeaderController@edit')->name('entry-header.edit');
     Route::get('entry-header/create', 'EntryHeaderController@create')->name('entry-header.create');
     Route::get('entry-header/pre-select', 'EntryHeaderController@select')->name('entry-header.selection');
