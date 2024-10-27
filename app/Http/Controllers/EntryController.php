@@ -102,7 +102,25 @@ class EntryController extends Controller
         }
 
         // SUBSTRING(category_list.NAME, 1, 40) as 'NAME'
-        $sql = "WITH productlist AS (SELECT category_list.NAME, category_list.description, category.NAME AS category_name, category_list.price, category_list.hst_enforced, category_list.category_list_id FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category_list.is_deleted = 0 AND category.is_deleted = 0 AND category.type_id = 1), rankTable AS (SELECT productlist.category_list_id,  COALESCE(sum(tbl_entry.quantity),0) as orderQuantity from productlist left join tbl_entry on productlist.category_list_id=tbl_entry.category_list_id left join entry_header on tbl_entry.entry_id=entry_header.entry_id And entry_header.is_deleted=0 And entry_header.order_placed=1 group by productlist.category_list_id ), itemordered AS (SELECT category_list_id, tbl_entry.quantity, tbl_entry_id, entry_id FROM tbl_entry where entry_id in (".implode(",", $EntryIdsToQuery).") ) SELECT product.NAME AS 'NAME', product.description, product.category_name, product.price, product.hst_enforced, product.category_list_id, rankTable.orderQuantity as 'rank', ";
+        $sql = "WITH productlist AS (SELECT category_list.NAME, category_list.description, category.NAME AS category_name, category_list.price, category_list.hst_enforced, category_list.category_list_id FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category_list.is_deleted = 0 AND category.is_deleted = 0 AND category.type_id = 1), rankTable AS (SELECT productlist.category_list_id,  COALESCE(sum(tbl_entry.quantity),0) as orderQuantity from productlist left join tbl_entry on productlist.category_list_id=tbl_entry.category_list_id ";
+        
+        if ($previousOrderResponses != null) {
+            $sql .= "And tbl_entry.entry_id in (";
+            
+            $ids = array_map(function($item) {
+                return $item->entry_id;
+            }, $previousOrderResponses);
+            
+            $idString = implode(',', array_map(function($id) {
+                return htmlspecialchars($id);
+                // return "'" . htmlspecialchars($id) . "'";
+            }, $ids));
+            
+            $sql .= $idString;
+            $sql .= ') ';
+        }
+
+        $sql .= "left join entry_header on tbl_entry.entry_id=entry_header.entry_id And entry_header.is_deleted=0 And entry_header.order_placed=1 group by productlist.category_list_id ), itemordered AS (SELECT category_list_id, tbl_entry.quantity, tbl_entry_id, entry_id FROM tbl_entry where entry_id in (".implode(",", $EntryIdsToQuery).") ) SELECT product.NAME AS 'NAME', product.description, product.category_name, product.price, product.hst_enforced, product.category_list_id, rankTable.orderQuantity as 'rank', ";
         
         $sql .= "COALESCE(SUM(CASE WHEN entry_id = ".$entry_id." THEN quantity END),0) AS quantity, COALESCE(MAX(CASE WHEN entry_id = ".$entry_id." THEN tbl_entry_id END),0) AS tbl_entry_id ";
         
@@ -114,19 +132,20 @@ class EntryController extends Controller
             }
         }
  
-        $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, orderQuantity order by rankTable.orderQuantity";
+        $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, orderQuantity order by rank desc";
 
-        //return $sql;
+        // return $sql;
         //CREATE INDEX idx_tbl_entry_entry_category ON tbl_entry(entry_id, category_list_id);
         $ItemList = DB::SELECT($sql);
 
-        if(Agent::isMobile())
-        {
-            return view('admin.entry.index2')->with('order_placed',$order_placed)->with('itemlist', $ItemList)->with('entry_id',$entry_id)->with('previousOrderResponses', $previousOrderResponses)->with('storeId',$storeId);
-        }else{
-            return view('admin.entry.index')->with('order_placed',$order_placed)->with('itemlist', $ItemList)->with('entry_id',$entry_id)->with('previousOrderResponses', $previousOrderResponses)->with('storeId',$storeId);
-        }
+        return view('admin.entry.index2')->with('order_placed',$order_placed)->with('itemlist', $ItemList)->with('entry_id',$entry_id)->with('previousOrderResponses', $previousOrderResponses)->with('storeId',$storeId);
 
+        // if(Agent::isMobile())
+        // {
+        //     return view('admin.entry.index2')->with('order_placed',$order_placed)->with('itemlist', $ItemList)->with('entry_id',$entry_id)->with('previousOrderResponses', $previousOrderResponses)->with('storeId',$storeId);
+        // }else{
+        //     return view('admin.entry.index')->with('order_placed',$order_placed)->with('itemlist', $ItemList)->with('entry_id',$entry_id)->with('previousOrderResponses', $previousOrderResponses)->with('storeId',$storeId);
+        // }
     }
 
     public function create($id, Request $request)
@@ -161,39 +180,38 @@ class EntryController extends Controller
         }
     }
 
-    public function preview($id)
+    public function preview(Request $request, $id)
     {
         $entry_id = (int) $id;
-
-        $sql="WITH orderItems AS(select category_list_id, quantity, rate from tbl_entry where tbl_entry.entry_id=".$entry_id."), OrderItemsWithCategory as ( SELECT category_list.NAME, category_list.description, category.NAME AS category_name, category_list.hst_enforced, category_list.category_list_id, orderItems.quantity*orderItems.rate as 'subTotal', CASE WHEN hst_enforced = 1 THEN orderItems.quantity * orderItems.rate * 0.13 ELSE 0 END AS 'hst_calculated', orderItems.quantity, orderItems.rate FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category.type_id = 1 INNER JOIN orderItems on category_list.category_list_id=orderItems.category_list_id) Select NAME, cast(rate as decimal) as 'rate', category_list_id, category_name, description, hst_calculated, hst_enforced, quantity, subtotal from OrderItemsWithCategory order by category_name";
+    
+        $sql="WITH orderitems AS(SELECT category_list_id, quantity, rate, tbl_entry_id FROM tbl_entry WHERE tbl_entry.entry_id = ".$entry_id."), orderitemswithcategory AS (SELECT category_list.NAME, category_list.description, category.NAME AS category_name, category_list.hst_enforced, category_list.category_list_id, CAST((orderitems.quantity * orderitems.rate) AS decimal(10,2)) AS 'subTotal', CASE WHEN hst_enforced = 1 THEN CAST((orderitems.quantity * orderitems.rate * 0.13) AS decimal(10,2)) ELSE 0 END AS 'hst_calculated', orderitems.quantity, orderitems.rate, orderitems.tbl_entry_id FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category.type_id = 1 INNER JOIN orderitems ON category_list.category_list_id = orderitems.category_list_id) SELECT NAME, Cast(rate AS DECIMAL) AS 'rate', category_list_id, category_name, description, hst_calculated, hst_enforced, quantity, subtotal FROM orderitemswithcategory ORDER BY tbl_entry_id";
 
         $responses = DB::Select($sql);
-        $responseObject = [];
         $totalItem=0;
         $subTotal=0;
         $HSTTotal=0;
 
-        foreach ($responses as $result) {
-            $object = (object) [
-            'NAME' => $result->NAME,
-            'description' => $result->description,
-            'category_name' => $result->category_name, 
-            'rate' => (float) $result->rate,
-            'category_list_id' => (float) $result->category_list_id,
-            'hst_calculated' => (float) $result->hst_calculated,
-            'hst_enforced' => (int) $result->hst_enforced,
-            'quantity' => (float) $result->quantity,
-            'subTotal' => (float) $result->subTotal
-            ];
+        if($responses != null)
+        {
+            $subTotal = array_reduce($responses, function($sum, $value) {
+                return $sum + floatval($value->subTotal);
+            }, 0);
 
-            $totalItem +=1;
-            $subTotal +=(float) $result->subTotal;
-            $HSTTotal += (float) $result->hst_calculated;
-            
-            array_push($responseObject, $object);
+            $HSTTotal = array_reduce($responses, function($sum, $value) {
+                return $sum + floatval($value->hst_calculated);
+            }, 0);
+
+            $totalItem = count($responses);
         }
 
-        return $responseObject;
+        $json_data = array(
+            "draw" => intval($request['draw']),
+            "recordsTotal" => intval($totalItem),
+            "recordsFiltered" => intval(0),
+            "data" => $responses
+        );
+
+        return $json_data;
     }
 
     public function next($id)

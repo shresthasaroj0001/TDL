@@ -141,8 +141,9 @@
         padding-right: 10px !important;
     }
 
-    #mytable thead tr th:not(:first-child) {
-        /* text-align: right !important; */
+    #previewtable thead tr th:not(:first-child) {
+        text-align: right !important;
+        padding-right: 10px !important
     }
 
     th.dt-type-numeric {
@@ -235,16 +236,19 @@
                 <div class="table-responsive">
                     <table id="mytable" class="table responsive-table" style="width: 100%">
                         <thead class="sticky-tops">
+                            
                             <tr>
                                 <th>Name</th>
-                                <th>Category</th>
-                                <th class="RestrictOrdering">Price</th>
+                                <th class="hiddenCols">Category</th>
                                 <th class="hiddenCols">Rank</th>
-                                <th class="hiddenCols">Quantity</th>
-                                <th class="RestrictOrdering">Quantity</th>
-                                <th class="hiddenCols">HST</th>
+                                <th class="hiddenCols hst-input">Is HST ?</th>
+                                <th class="RestrictOrdering rate-input">Price</th>
+                                <th class="RestrictOrdering quantity-input">Quantity</th>
+                                <th class="RestrictOrdering hiddenCols">Quantity</th>
                                 <th class="hiddenCols">tbl_entry_id</th>
                                 <th class="hiddenCols">category_list_id</th>
+                                <th class="hiddenCols">Amount</th>
+                                <th class="hiddenCols">HST</th>
                                 @foreach ($previousOrderResponses as $item)
                                 <th class="RestrictOrdering" style="padding-left: 2px; padding-right: 2px; margin: 0px;">{{$item->OrderDate}}</th>
                                 @endforeach
@@ -252,19 +256,16 @@
                         </thead>
                         <tbody>
                             @foreach ($itemlist as $index=>$item)
-                            <tr @if ($item->quantity > 0)
-                                class='categorySelected'
-                                @endif
-                                >
+                            <tr @if ($item->quantity > 0) class='categorySelected' @endif >
                                 <td>{{$item->NAME}}
                                     @if ($item->hst_enforced == '1')
                                     <span class="hstEnforced">*</span>
                                     @endif
                                 </td>
                                 <td>{{$item->category_name}}</td>
-                                <td>{{$item->price}}</td>
                                 <td>{{$item->rank}}</td>
-                                <td class="qty">{{$item->quantity}}</td>
+                                <td class="hst-input">{{$item->hst_enforced}}</td>
+                                <td class="rate-input">{{$item->price}}</td>
                                 <td class="qtytd" style="padding-left: 0px; padding-right: 0px;">
                                     <div class="number" style="">
                                         <span class="minus">-</span>
@@ -272,9 +273,11 @@
                                         <span class="plus">+</span>
                                     </div>
                                 </td>
-                                <td>{{$item->hst_enforced}}</td>
+                                <td class="quantity-input">{{$item->quantity}}</td>
                                 <td>{{$item->tbl_entry_id}}</td>
                                 <td>{{$item->category_list_id}}</td>
+                                <td class="subtotal-amount">{{$item->quantity * $item->price}}</td>
+                                <td class="subtotal-hst">@php echo number_format(($item->hst_enforced? $item->quantity*$item->price*0.13:0),2);@endphp</td>
                                 @if(isset($item->item1))
                                 <td class="itemNumeric" style="text-align: center !important;padding-left: 0px; padding-right: 0px; margin: 0px;">{{$item->item1}}</td>
                                 @endif
@@ -296,9 +299,9 @@
                 <div class="modal-header">
                     <h4 class="modal-title previewed" id="previewTotal"></h4>
 
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    {{-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
-                    </button>
+                    </button> --}}
                 </div>
                 
                 <div class="modal-body" style="margin: 0px !important; padding: 1px !important;">
@@ -307,7 +310,7 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Category</th>
+                                        {{-- <th>Category</th> --}}
                                         <th>Rate</th>
                                         <th>Quantity</th>
                                         <th>Sub-Total</th>
@@ -334,4 +337,5 @@
 </div>
 <input type="hidden" name="_token" id="tokken" value="{{ csrf_token() }}">
 <input type="hidden" name="_currentUrl" id="_currentUrl" value="{{ url()->current() }}">
+<input type="hidden" name="_order_placed" id="_order_placed" value="{{ $order_placed }}">
 @endsection
