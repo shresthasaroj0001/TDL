@@ -23,6 +23,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('entry-header/create', 'EntryHeaderController@create')->name('entry-header.create');
     Route::get('entry-header/pre-select', 'EntryHeaderController@select')->name('entry-header.selection');
     Route::get('entry-header/{id}/delete', 'EntryHeaderController@delete')->name('entry-header.delete');
+    Route::delete('entry-header/index/{id}', 'EntryHeaderController@deleteEntry');
     Route::get('entry-header/{id}/complete', 'EntryHeaderController@complete')->name('entry-header.done');
     
     Route::get('entry/{id}/index', 'EntryController@index')->name('entry.item.index');

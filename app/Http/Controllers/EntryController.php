@@ -132,7 +132,7 @@ class EntryController extends Controller
             }
         }
  
-        $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, orderQuantity order by rank desc";
+        $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, orderQuantity";
 
         // return $sql;
         //CREATE INDEX idx_tbl_entry_entry_category ON tbl_entry(entry_id, category_list_id);

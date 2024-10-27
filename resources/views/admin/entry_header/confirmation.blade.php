@@ -31,9 +31,9 @@
                                 <div class="col">
                                     <label for="inputEmail3" class="col-form-label"><b>Location: </b></label>
                                     @if ($storeId == 1)
-                                        <span>Danforth</span>
+                                    <span>Danforth</span>
                                     @else
-                                        <span>Markham</span>
+                                    <span>Markham</span>
                                     @endif
                                 </div>
                             </div>
@@ -65,12 +65,18 @@
                                             id="savebtn" class="btn btn-danger savebtn">Delete</button></a>
                                 </div>
                                 <div class="col" style="text-align: center">
-                                    <a href="{{ route('entry.item.index',['id'=>$order_id,'store'=>$storeId]) }}"><button type="button"
-                                            id="savebtn" class="btn btn-primary savebtn">Continue</button></a>
+                                    <a href="{{ route('entry.item.index',['id'=>$order_id,'store'=>$storeId]) }}"><button
+                                            type="button" id="savebtn"
+                                            class="btn btn-primary savebtn">Continue</button></a>
                                 </div>
                                 <div class="col" style="text-align: right">
+                                    @if ($cart_items == 0)
+                                    <button type="button" id="savebtn" disabled class="btn btn-success savebtn">Mark
+                                        Done</button>
+                                    @else
                                     <a href="{{ route('entry-header.done',[$order_id]) }}"><button type="button"
                                             id="savebtn" class="btn btn-success savebtn">Mark Done</button></a>
+                                    @endif
                                 </div>
                             </div>
                         </div>

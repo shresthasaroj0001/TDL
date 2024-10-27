@@ -42,6 +42,42 @@
             //  maxYear: parseInt(moment().format('YYYY'),10)
         });
 
+        $("#example1").on("click", ".action-delete", function () {
+            // $("#mytbl .action-delete").click(function () {
+            button = null;
+            button = $(this);
+            //(button.attr('rowid'));
+            
+            var result = confirm("Are You Sure You want to delete ?");
+            if (result) {
+                var i = $('#_currentUrl').val() + "/" + button.attr("rowid");
+                $.ajax({
+                headers: {
+                "X-CSRF-TOKEN": $("#tokken").val(),
+                },
+                url: i,
+                type: "Delete",
+                success: function (ddata) {
+                    if (ddata == 0) {
+                        alert("Internal Error");
+                        return false;
+                    }
+            
+                    if (ddata == 1) {
+                        let currentTR = button.closest("tr");
+                        currentTR.addClass("Row4Delete");
+                        if (currentTR.hasClass("child")) {
+                        prevTR = currentTR.prev();
+                        prevTR.addClass("Row4Delete");
+                        }
+                    
+                        $(".Row4Delete").remove();
+                    }},
+                //fail
+                });
+            }
+        });
+
     });
 
     $('input[name="birthday"]').on('apply.daterangepicker', function(ev, picker) {
@@ -139,8 +175,8 @@
                                 data-entry-id="{{ $item->entry_id }}" />
                         </td>
                         <td>
-                            <button class="btn btn-primary action-delete" rowid="{{$item->entry_id}}"><i
-                                    class="fa fa-pen" aria-hidden="true"></i></button>
+                            {{-- <button class="btn btn-primary action-delete" rowid="{{$item->entry_id}}"><i
+                                    class="fa fa-pen" aria-hidden="true"></i></button> --}}
                             <button class="btn btn-danger action-delete" rowid="{{$item->entry_id}}"><i
                                     class="fa fa-trash"></i></button>
                         </td>

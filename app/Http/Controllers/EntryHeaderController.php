@@ -141,6 +141,7 @@ class EntryHeaderController extends Controller
         return view('admin.entry_header.confirmation')->with(compact('storeId','lastOrder', 'is_completed', 'order_id','cart_items','total_price','hst_price'));
     }
 
+    //from Confirmation box
     public function delete($id)
     {
         if (is_null($id) || empty($id) || !is_numeric($id)) {
@@ -166,6 +167,29 @@ class EntryHeaderController extends Controller
             return redirect()->route('dashboard')->with('success', "Delete successful");
         }else{
             return redirect()->route('dashboard')->with('error', "Delete failed");
+        }
+    }
+
+    //delete from jQuery
+    public function deleteEntry($id)
+    {
+        if (is_null($id) || empty($id) || !is_numeric($id)) {
+            return 0;
+        }
+
+        $entry_id = (int) $id;
+
+        $responses = DB::select("select order_placed from entry_header where entry_id = ?",[$entry_id]);
+        if($responses == null)
+        {
+            return 0; //no record exist
+        }
+
+        $row = DB::update("update entry_header set is_deleted=1, updated_at=? where entry_id=?", [gmdate("Y/m/d H:i:s"), $entry_id]);
+        if ($row == 1) {
+            return 1;
+        }else{
+            return 0;
         }
     }
 
