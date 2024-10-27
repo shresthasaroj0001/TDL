@@ -1,6 +1,6 @@
 @extends('admin.master')
 @section('btitle')
-<title>Test</title>
+<title>Preview</title>
 @endsection
 @section('mycss')
 <link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.5.0/css/rowGroup.dataTables.css">
@@ -129,8 +129,13 @@
                         <p>HST: ${{$HSTTotal}}</p>
                     </div>
                     <div class="col-md-3 col-sm-3 col" style="padding-right: 2px; text-align: -webkit-right;">
+                        @if ($isOrderPlaced == 0)
                         <a href="{{ route('entry-header.done',[$entry_id]) }}">
-                            <button type="button" id="previewBtn" class="btn btn-success btn-sm">Mark Done</button></a>
+                            <button type="button" id="previewBtn" class="btn btn-success btn-sm">Mark Done</button></a>                            
+                        @else
+                        <a href="{{ route('entry-header.index') }}">
+                            <button type="button" id="previewBtn" class="btn btn-success btn-sm">View Orders</button></a>
+                        @endif
                     </div>
                 </div>
             </div>

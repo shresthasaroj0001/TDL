@@ -20,7 +20,7 @@
 <script>
     $(function () {
         $("#example1").DataTable({
-            "order": [0,'desc'],
+            "order": [],
             "ordering": true,
             columnDefs: [
                 { targets: "hiddenCols", visible: false },
@@ -175,8 +175,9 @@
                                 data-entry-id="{{ $item->entry_id }}" />
                         </td>
                         <td>
-                            {{-- <button class="btn btn-primary action-delete" rowid="{{$item->entry_id}}"><i
-                                    class="fa fa-pen" aria-hidden="true"></i></button> --}}
+                            <a href="{{ route('next',[$item->entry_id]) }}">
+                            <button class="btn btn-primary" rowid="{{$item->entry_id}}"><i
+                                    class="fa fa-repeat" aria-hidden="true"></i></button></a>
                             <button class="btn btn-danger action-delete" rowid="{{$item->entry_id}}"><i
                                     class="fa fa-trash"></i></button>
                         </td>
