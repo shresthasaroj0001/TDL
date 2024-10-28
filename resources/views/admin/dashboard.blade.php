@@ -10,14 +10,15 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous">
 </script>
-<script src="/b/assets/demo/chart-area-demo.js"></script>
-<script src="/b/assets/demo/chart-bar-demo.js"></script>
+{{-- <script src="/b/assets/demo/chart-area-demo.js"></script> --}}
+{{-- <script src="/b/assets/demo/chart-bar-demo.js"></script> --}}
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
     crossorigin="anonymous"></script>
 <script src="/b/js/datatables-simple-demo.js"></script>
 
 <script>
     $(document).ready(function () {
+
 toastr.options = {
 "closeButton": false,
 "debug": false,
@@ -36,7 +37,146 @@ toastr.options = {
 "hideMethod": "fadeOut"
 }
 
+Chart.defaults.global.defaultFontFamily = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontColor = '#292b2c';
 
+// Area Chart Example
+
+$.ajax({
+            headers: {
+                "X-CSRF-TOKEN": $("#tokken").val(),
+            },
+            url: $("#_currentUrl").val(),
+            type: "POST",
+            success: function (response) {
+                console.log("AJAX Response" + response.LineChart.aLabels);
+
+                var config = {
+                    type: 'line',
+                    data: {
+                        labels: response.LineChart.aLabels,
+                        datasets: [{
+                            data: response.LineChart.aStore1,
+                            borderColor: "blue",
+                            fill: false,
+                            label: "Danforth"
+                            // backgroundColor: 'rgb(124, 181, 236)',
+                            // stroke: 'rgb(255, 255, 255)',
+                            // 'stroke-width': 1,
+                            // borderWidth: 2
+                        },
+                        {
+                            data: response.LineChart.aStore2,
+                            borderColor: "green",
+                            fill: false,
+                            label : "Markham"
+                            // backgroundColor: 'rgb(124, 181, 236)',
+                            // stroke: 'rgb(255, 255, 255)',
+                            // 'stroke-width': 1
+                            //borderWidth: 2
+                        }
+                    ]
+                    },
+                    options: {
+                        responsive: true,
+                        title: {
+                            display: true,
+                            text: "Order's value"
+                        },
+                         legend: {
+                            display: true,
+                        },
+                         
+                        scales: {
+        					xAxes: [{
+        						display: true,
+        						scaleLabel: {
+        							display: true,
+        							labelString: ''
+        						}
+        					}],
+        					yAxes: [{
+        						display: true,
+        						scaleLabel: {
+        							display: true,
+        							labelString: 'Price in $'
+        						}
+        					}]
+        				}
+                    }
+                };
+                // Get ctx
+                var ctx = document.getElementById('myAreaChart').getContext('2d');
+                window.myGauge = new Chart(ctx, config);
+
+                var barColors = ["blue", "green"];
+                var ctx1 = document.getElementById("myBarChart");
+var myLineChart = new Chart(ctx1, {
+  type: 'bar',
+  data: {
+    labels: response.BarChart.bLabels, //["January", "February", "March", "April", "May", "June"],
+    datasets: [{
+      label: "Danforth",
+    //   backgroundColor: "rgba(2,117,216,1)",
+    //   borderColor: "rgba(2,117,216,1)",
+      data: response.BarChart.bStore1, //[4215, 5312, 6251, 7841, 9821, 14984],
+      backgroundColor: barColors[0]
+    },
+    {
+      label: "Markham",
+    //   backgroundColor: "rgba(2,117,216,1)",
+    //   borderColor: "rgba(2,117,216,1)",
+      data: response.BarChart.bStore2, //[4215, 5312, 6251, 7841, 9821, 14984],
+      backgroundColor: barColors[1]
+    }
+],
+  },
+  options: {
+    scales: {
+      xAxes: [{
+        time: {
+          unit: 'month'
+        },
+        gridLines: {
+          display: false
+        },
+        ticks: {
+          maxTicksLimit: 6
+        }
+      }],
+      yAxes: [{
+        ticks: {
+        //   min: 0,
+        //   max: 15000,
+          maxTicksLimit: 5
+        },
+        gridLines: {
+          display: true
+        },
+        display : true,
+        scaleLabel: {
+        							display: true,
+        							labelString: 'Price in $'
+        						}
+      }],
+    },
+    legend: {   
+      display: true
+    }
+  }
+});
+
+                //bar chart
+            },
+            beforeSend: function () {
+            },
+            complete: function () {
+            },
+            fail: function (ddata) {
+                console.log(ddata);
+                alert("Error while processing your request");
+            },
+        });
 // $('#toastrOptions').text(toastr["success"]("My name is Inigo Montoya. You killed my father. Prepare to die!"));
 
 
@@ -47,6 +187,9 @@ toastr.options = {
 @section('bodycontent')
 @include('admin.messages')
 <div class="container-fluid px-4">
+    <input type="hidden" name="_token" id="tokken" value="{{ csrf_token() }}">
+    <input type="hidden" name="_currentUrl" id="_currentUrl" value="{{ url()->current() }}">
+
     <h1 class="mt-4">Dashboard</h1>
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item active">Dashboard</li>
@@ -94,18 +237,18 @@ toastr.options = {
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-chart-area me-1"></i>
-                    Area Chart Example
+                    Per Order Value
                 </div>
-                <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+                <div class="card-bodys"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
             </div>
         </div>
         <div class="col-xl-6">
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-chart-bar me-1"></i>
-                    Bar Chart Example
+                    Order value - Monthly
                 </div>
-                <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
+                <div class="card-bodys"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
             </div>
         </div>
     </div>

@@ -11,6 +11,7 @@ Auth::routes(['register' => false]);
 
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/dashboard', 'HomeController@index')->name('dashboard');
+    Route::post('/dashboard', 'HomeController@index_data');
 
     Route::resource('setting.name', 'CategoryController');
     Route::get('/setting', 'CategoryController@indexx')->name('setting_name');
