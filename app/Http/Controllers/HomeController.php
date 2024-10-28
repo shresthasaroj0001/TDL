@@ -34,7 +34,7 @@ class HomeController extends Controller
             
             //line chart
             $lineChart = array();
-            $sql = "WITH entrydateList AS( SELECT distinct entry_date FROM entry_header WHERE order_placed = 1 AND is_deleted = 0 order by entry_date desc limit 10) select store_id, DATE_FORMAT(entry_header.entry_date, '%b-%e') 'OrderDate' , cast(total_price+hst_price as decimal(10,2)) as 'dailysum' from entry_header inner join entrydateList on entry_header.entry_date=entrydateList.entry_date where order_placed = 1 AND is_deleted = 0 order by entry_header.entry_date";
+            $sql = "WITH entrydateList AS( SELECT entry_date FROM entry_header WHERE order_placed = 1 AND is_deleted = 0 GROUP BY entry_date ORDER BY entry_date DESC LIMIT 10) select store_id, DATE_FORMAT(entry_header.entry_date, '%b-%e') 'OrderDate' , cast(total_price+hst_price as decimal(10,2)) as 'dailysum' from entry_header inner join entrydateList on entry_header.entry_date=entrydateList.entry_date where order_placed = 1 AND is_deleted = 0 order by entry_header.entry_date";
 
             $responses = DB::Select($sql);
             if ($responses != null) {
@@ -80,7 +80,7 @@ class HomeController extends Controller
             }
 
             //bar chart
-            $sql = "WITH entrydateMonth AS( select distinct(DATE_FORMAT(entry_header.entry_date, '%Y-%b')) 'OrderDate' from entry_header WHERE order_placed=1 AND is_deleted=0 order by entry_date desc limit 5) select sum(total_price+hst_price) 'monthOrderValue', store_id ,DATE_FORMAT(entry_header.entry_date, '%Y-%b') 'OrderDate' from entry_header inner join entrydateMonth on DATE_FORMAT(entry_header.entry_date, '%Y-%b') = entrydateMonth.OrderDate where order_placed = 1 AND is_deleted = 0 group by DATE_FORMAT(entry_header.entry_date, '%Y-%b'), entry_header.store_id order by entry_header.entry_date";
+            $sql = "WITH entrydateMonth AS( select DATE_FORMAT(entry_header.entry_date, '%Y-%b') 'OrderDate' from entry_header WHERE order_placed=1 AND is_deleted=0 group by DATE_FORMAT(entry_header.entry_date, '%Y-%b') order by entry_date desc limit 5) select sum(total_price+hst_price) 'monthOrderValue', store_id ,DATE_FORMAT(entry_header.entry_date, '%Y-%b') 'OrderDate' from entry_header inner join entrydateMonth on DATE_FORMAT(entry_header.entry_date, '%Y-%b') = entrydateMonth.OrderDate where order_placed = 1 AND is_deleted = 0 group by DATE_FORMAT(entry_header.entry_date, '%Y-%b'), entry_header.store_id order by entry_header.entry_date";
 
             $responses = DB::Select($sql);
             $BarChart = array();
