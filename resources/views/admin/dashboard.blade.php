@@ -46,7 +46,7 @@ $.ajax({
             url: $("#_currentUrl").val(),
             type: "POST",
             success: function (response) {
-                console.log("AJAX Response" + response.LineChart.aLabels);
+                //console.log("AJAX Response" + response.LineChart.aLabels);
 
                 var config = {
                     type: 'line',
