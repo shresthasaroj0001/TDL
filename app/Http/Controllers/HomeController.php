@@ -34,7 +34,7 @@ class HomeController extends Controller
             
             //line chart
             $lineChart = array();
-            $sql = "WITH entrydateList AS( SELECT entry_date FROM entry_header WHERE order_placed = 1 AND is_deleted = 0 GROUP BY entry_date ORDER BY entry_date DESC LIMIT 10) select store_id, DATE_FORMAT(entry_header.entry_date, '%b-%e') 'OrderDate' , cast(total_price+hst_price as decimal(10,2)) as 'dailysum' from entry_header inner join entrydateList on entry_header.entry_date=entrydateList.entry_date where order_placed = 1 AND is_deleted = 0 order by entry_header.entry_date";
+            $sql = "WITH entrydateList AS( SELECT entry_date FROM entry_header WHERE order_placed = 1 AND is_deleted = 0 GROUP BY entry_date ORDER BY entry_date DESC LIMIT 10) SELECT store_id, DATE_FORMAT(entry_header.entry_date, '%b-%e') AS 'OrderDate', CAST(total_price + hst_price AS DECIMAL(10,2)) AS 'dailysum' FROM entry_header INNER JOIN entrydateList ON entry_header.entry_date = entrydateList.entry_date WHERE order_placed = 1 AND is_deleted = 0 GROUP BY store_id, entry_header.entry_date ORDER BY entry_header.entry_date DESC";
 
             $responses = DB::Select($sql);
             if ($responses != null) {
@@ -80,51 +80,51 @@ class HomeController extends Controller
             }
 
             //bar chart
-            $sql = "WITH entrydateMonth AS( select DATE_FORMAT(entry_header.entry_date, '%Y-%b') 'OrderDate' from entry_header WHERE order_placed=1 AND is_deleted=0 group by DATE_FORMAT(entry_header.entry_date, '%Y-%b') order by entry_date desc limit 5) select sum(total_price+hst_price) 'monthOrderValue', store_id ,DATE_FORMAT(entry_header.entry_date, '%Y-%b') 'OrderDate' from entry_header inner join entrydateMonth on DATE_FORMAT(entry_header.entry_date, '%Y-%b') = entrydateMonth.OrderDate where order_placed = 1 AND is_deleted = 0 group by DATE_FORMAT(entry_header.entry_date, '%Y-%b'), entry_header.store_id order by entry_header.entry_date";
+            // $sql = "WITH entrydateMonth AS( select DATE_FORMAT(entry_header.entry_date, '%Y-%b') 'OrderDate' from entry_header WHERE order_placed=1 AND is_deleted=0 group by DATE_FORMAT(entry_header.entry_date, '%Y-%b') order by entry_date desc limit 5) select sum(total_price+hst_price) 'monthOrderValue', store_id ,DATE_FORMAT(entry_header.entry_date, '%Y-%b') 'OrderDate' from entry_header inner join entrydateMonth on DATE_FORMAT(entry_header.entry_date, '%Y-%b') = entrydateMonth.OrderDate where order_placed = 1 AND is_deleted = 0 group by DATE_FORMAT(entry_header.entry_date, '%Y-%b'), entry_header.store_id order by entry_header.entry_date";
 
-            $responses = DB::Select($sql);
+            // $responses = DB::Select($sql);
             $BarChart = array();
-            if ($responses != null) {
-                $orderDates = array_unique(array_column($responses, 'OrderDate'));
-                $store1 = array();
-                $store2 = array();
-                $labels = array();
+            // if ($responses != null) {
+            //     $orderDates = array_unique(array_column($responses, 'OrderDate'));
+            //     $store1 = array();
+            //     $store2 = array();
+            //     $labels = array();
 
-                foreach ($orderDates as $dates) {
-                    array_push($labels, (string) $dates);
+            //     foreach ($orderDates as $dates) {
+            //         array_push($labels, (string) $dates);
 
-                    $store1Date = array_values(array_filter($responses, function ($obj) use ($dates) {
-                        if (isset($obj->store_id) && ($obj->store_id == 1) && ($obj->OrderDate == $dates)) {
-                            return true;
-                        }
-                        return false;
-                    }));
+            //         $store1Date = array_values(array_filter($responses, function ($obj) use ($dates) {
+            //             if (isset($obj->store_id) && ($obj->store_id == 1) && ($obj->OrderDate == $dates)) {
+            //                 return true;
+            //             }
+            //             return false;
+            //         }));
 
-                    $store1OrderValue = 0;
-                    if (!empty($store1Date)) {
-                        $store1OrderValue = $store1Date[0]->monthOrderValue;
-                    }
-                    array_push($store1, $store1OrderValue);
+            //         $store1OrderValue = 0;
+            //         if (!empty($store1Date)) {
+            //             $store1OrderValue = $store1Date[0]->monthOrderValue;
+            //         }
+            //         array_push($store1, $store1OrderValue);
 
-                    $store2Date = array_values(array_filter($responses, function ($obj) use ($dates) {
-                        if (isset($obj->store_id) && ($obj->store_id == 2) && ($obj->OrderDate == $dates)) {
-                            return true;
-                        }
-                        return false;
-                    }));
+            //         $store2Date = array_values(array_filter($responses, function ($obj) use ($dates) {
+            //             if (isset($obj->store_id) && ($obj->store_id == 2) && ($obj->OrderDate == $dates)) {
+            //                 return true;
+            //             }
+            //             return false;
+            //         }));
 
-                    $store2OrderValue = 0;
-                    if (!empty($store2Date))
-                        $store2OrderValue = $store2Date[0]->monthOrderValue;
-                    array_push($store2, $store2OrderValue);
-                }
+            //         $store2OrderValue = 0;
+            //         if (!empty($store2Date))
+            //             $store2OrderValue = $store2Date[0]->monthOrderValue;
+            //         array_push($store2, $store2OrderValue);
+            //     }
 
-                $BarChart = array(
-                    "bLabels" => $labels,
-                    "bStore1" => $store1,
-                    "bStore2" => $store2
-                );
-            }
+            //     $BarChart = array(
+            //         "bLabels" => $labels,
+            //         "bStore1" => $store1,
+            //         "bStore2" => $store2
+            //     );
+            // }
 
             return array(
                 "LineChart" => $lineChart,
