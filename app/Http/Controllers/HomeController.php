@@ -34,7 +34,7 @@ class HomeController extends Controller
             
             //line chart
             $lineChart = array();
-            $sql = "WITH entrydateList AS( SELECT entry_date FROM entry_header WHERE order_placed = 1 AND is_deleted = 0 GROUP BY entry_date ORDER BY entry_date DESC LIMIT 10) SELECT store_id, DATE_FORMAT(entry_header.entry_date, '%b-%e') AS 'OrderDate', CAST(total_price + hst_price AS DECIMAL(10,2)) AS 'dailysum' FROM entry_header INNER JOIN entrydateList ON entry_header.entry_date = entrydateList.entry_date WHERE order_placed = 1 AND is_deleted = 0 GROUP BY store_id, entry_header.entry_date ORDER BY entry_header.entry_date DESC";
+            $sql = "WITH entrydateList AS( SELECT entry_date FROM entry_header WHERE order_placed = 1 AND is_deleted = 0 GROUP BY entry_date ORDER BY entry_date DESC LIMIT 10) SELECT MAX(store_id) AS store_id, DATE_FORMAT(entry_header.entry_date, '%b-%e') AS 'OrderDate', CAST(SUM(total_price + hst_price) AS DECIMAL(10,2)) AS 'dailysum' FROM entry_header INNER JOIN entrydateList ON entry_header.entry_date = entrydateList.entry_date WHERE order_placed = 1 AND is_deleted = 0 GROUP BY entry_header.entry_date ORDER BY entry_header.entry_date DESC";
 
             $responses = DB::Select($sql);
             if ($responses != null) {
