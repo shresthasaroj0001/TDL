@@ -77,8 +77,9 @@
                             <th>Name</th>
                             <th>Category</th>
                             <th>HST</th>
+                            <th>Order Count</th>
                             <th>Price</th>
-                            <th>Action</th>
+                            <th>-</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -95,6 +96,7 @@
                                 No
                                 @endif
                             </td>
+                            <td>{{$item->orderedQuantityCnt}}</td>
                             <td>${{$item->price}}</td>
                             <td>
                                 <a href="{{route('setting.list.edit',[$categoryId, $item->category_list_id])}}">

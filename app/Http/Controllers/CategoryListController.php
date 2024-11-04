@@ -35,7 +35,7 @@ class CategoryListController extends Controller
             return redirect()->route('dashboard')->withInput()->with('error', "Category not listed");
         }
 
-        $responses = DB::select("select category_list.category_list_id, category_list.name, category_list.description, category.name as category, hst_enforced, category_list_id, category_list.price from category inner join category_list on category.category_id=category_list.category_id WHERE category.is_deleted=0 and category_list.is_deleted=0 and category.type_id=? order by category_list_id desc, category_list_id desc", [$categoryId]);
+        $responses = DB::select("WITH itemOrdered AS( Select tbl_entry.category_list_id, sum(tbl_entry.quantity) as sum from tbl_entry inner join entry_header on tbl_entry.entry_id=entry_header.entry_id where entry_header.order_placed=1 and is_deleted=0 group by tbl_entry.category_list_id) select category_list.category_list_id, category_list.name, category_list.description, category.name as category, hst_enforced, category_list.price, COALESCE(itemOrdered.sum, 0) as 'orderedQuantityCnt' from category inner join category_list on category.category_id=category_list.category_id left join itemOrdered on category_list.category_list_id = itemOrdered.category_list_id WHERE category.is_deleted=0 and category_list.is_deleted=0 and category.type_id=?", [$categoryId]);
 
         return view('admin.categorylist.index')->with('list', $responses)->with('categoryId', $categoryId)->with('categoryName', $this->getMyList($categoryId));
     }

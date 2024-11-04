@@ -183,7 +183,7 @@ var myLineChart = new Chart(ctx1, {
 
 @section('bodycontent')
 @include('admin.messages')
-<div class="container-fluid px-4">
+<div class="container-fluid px-2">
     <input type="hidden" name="_token" id="tokken" value="{{ csrf_token() }}">
     <input type="hidden" name="_currentUrl" id="_currentUrl" value="{{ url()->current() }}">
 
@@ -191,7 +191,8 @@ var myLineChart = new Chart(ctx1, {
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item active">Dashboard</li>
     </ol>
-    <div class="row">
+    
+    <div class="row" style="display: none">
         <div class="col-xl-3 col-md-6">
             <div class="card bg-primary text-white mb-4">
                 <div class="card-body">Primary Card</div>
