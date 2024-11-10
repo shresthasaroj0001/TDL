@@ -167,7 +167,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.dataTables.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.5.0/css/rowGroup.dataTables.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/4.0.1/css/fixedHeader.dataTables.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css">
+{{-- <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.css"> --}}
 @endsection
 
 @section('myscript')
@@ -179,9 +179,9 @@
 <script src="/b/js/toastr.js"></script>
 
 <script src="https://cdn.datatables.net/fixedheader/4.0.1/js/dataTables.fixedHeader.js"></script>
-<script defer src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
-<script defer src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
-<script defer src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.colVis.min.js"></script>
+{{-- <script defer src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script> --}}
+{{-- <script defer src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script> --}}
+{{-- <script defer src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.colVis.min.js"></script> --}}
 
 <script defer src="https://cdn.datatables.net/rowgroup/1.5.0/js/dataTables.rowGroup.js"></script>
 <script defer src="https://cdn.datatables.net/rowgroup/1.5.0/js/rowGroup.dataTables.js"></script>

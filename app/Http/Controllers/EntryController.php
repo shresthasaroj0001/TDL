@@ -102,23 +102,23 @@ class EntryController extends Controller
         // SUBSTRING(category_list.NAME, 1, 40) as 'NAME'
         $sql = "WITH productlist AS (SELECT category_list.NAME, category_list.description, category.NAME AS category_name, category_list.price, category_list.hst_enforced, category_list.category_list_id FROM category INNER JOIN category_list ON category.category_id = category_list.category_id AND category_list.is_deleted = 0 AND category.is_deleted = 0 AND category.type_id = 1), rankTable AS (SELECT productlist.category_list_id,  COALESCE(sum(tbl_entry.quantity),0) as orderQuantity from productlist left join tbl_entry on productlist.category_list_id=tbl_entry.category_list_id ";
 
-        if ($previousOrderResponses != null) {
-            $sql .= "And tbl_entry.entry_id in (";
+        // if ($previousOrderResponses != null) {
+        //     $sql .= "And tbl_entry.entry_id in (";
 
-            $ids = array_map(function ($item) {
-                return $item->entry_id;
-            }, $previousOrderResponses);
+        //     $ids = array_map(function ($item) {
+        //         return $item->entry_id;
+        //     }, $previousOrderResponses);
 
-            $idString = implode(',', array_map(function ($id) {
-                return htmlspecialchars($id);
-                // return "'" . htmlspecialchars($id) . "'";
-            }, $ids));
+        //     $idString = implode(',', array_map(function ($id) {
+        //         return htmlspecialchars($id);
+        //         // return "'" . htmlspecialchars($id) . "'";
+        //     }, $ids));
 
-            $sql .= $idString;
-            $sql .= ') ';
-        }
+        //     $sql .= $idString;
+        //     $sql .= ') ';
+        // }
 
-        $sql .= "left join entry_header on tbl_entry.entry_id=entry_header.entry_id And entry_header.is_deleted=0 And entry_header.order_placed=1 group by productlist.category_list_id ), itemordered AS (SELECT category_list_id, tbl_entry.quantity, tbl_entry_id, entry_id FROM tbl_entry where entry_id in (" . implode(",", $EntryIdsToQuery) . ") ) SELECT product.NAME AS 'NAME', product.description, product.category_name, product.price, product.hst_enforced, product.category_list_id, rankTable.orderQuantity as 'rank', ";
+        $sql .= "left join entry_header on tbl_entry.entry_id=entry_header.entry_id And entry_header.is_deleted=0 And entry_header.order_placed=1 AND entry_header.store_id=" . $storeId . " group by productlist.category_list_id ), itemordered AS (SELECT category_list_id, tbl_entry.quantity, tbl_entry_id, entry_id FROM tbl_entry where entry_id in (" . implode(",", $EntryIdsToQuery) . ") ) SELECT product.NAME AS 'NAME', product.description, product.category_name, product.price, product.hst_enforced, product.category_list_id, rankTable.orderQuantity as 'rank', ";
 
         $sql .= "COALESCE(SUM(CASE WHEN entry_id = " . $entry_id . " THEN quantity END),0) AS quantity, COALESCE(MAX(CASE WHEN entry_id = " . $entry_id . " THEN tbl_entry_id END),0) AS tbl_entry_id ";
 
@@ -132,7 +132,7 @@ class EntryController extends Controller
 
         $sql .= " FROM productlist product inner join rankTable on product.category_list_id = rankTable.category_list_id LEFT JOIN itemordered ON product.category_list_id = itemordered.category_list_id group by product.category_list_id, orderQuantity";
 
-        // return $sql;
+        //return $sql;
         //CREATE INDEX idx_tbl_entry_entry_category ON tbl_entry(entry_id, category_list_id);
         $ItemList = DB::SELECT($sql);
 
@@ -239,7 +239,7 @@ class EntryController extends Controller
             $isOrderPlaced = $responsess[0]->order_placed; 
         }
 
-        return view('admin.entry.next')->with('itemlist', $responses)->with('entry_id', $entry_id)->with('totalItem', $totalItem)->with('subTotal', $subTotal)->with('HSTTotal', $HSTTotal)->with('isOrderPlaced', $isOrderPlaced);
+        return view('admin.entry.next')->with('itemlist', $responses)->with('entry_id', $entry_id)->with('totalItem', $totalItem)->with('subTotal', number_format((float) $subTotal, 2, '.', ''))->with('HSTTotal', number_format((float)$HSTTotal, 2, '.', ''))->with('isOrderPlaced', $isOrderPlaced);
     }
 
     public function store($setting, Request $request)

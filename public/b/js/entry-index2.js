@@ -35,11 +35,11 @@ $(function () {
             footer: true,
             headerOffset: $(".sticky-top").outerHeight() + 40,
         },
-        layout: {
-            topStart: {
-                buttons: ["colvis"],
-            },
-        },
+        // layout: {
+        //     topStart: {
+        //         buttons: ["colvis"],
+        //     },
+        // },
         order: [2, "desc"],
         ordering: true,
         columnDefs: [
