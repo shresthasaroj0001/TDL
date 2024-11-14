@@ -102,6 +102,9 @@
             }
         });
 
+        $("#sendemail").click(function(){
+            $('#sendemail').attr("disabled",true);
+        });
     });
 </script>
 
@@ -115,34 +118,53 @@
         <li class="breadcrumb-item active">Next</li>
     </ol>
     @include('admin.messages')
-    <div class="mb-4 sticky-top" style="position: -webkit-sticky; top: 3rem !important; z-index: 1000 !important;">
-        <div class="card mb-4" style="background-color: #e9ecef; color: #6c757d;">
+    <div class="sticky-top" style="position: -webkit-sticky; top: 3rem !important; z-index: 1000 !important;">
+        <div class="card" style="background-color: #e9ecef; color: #6c757d;">
             <div class="card-body" style="padding-bottom: 0% !important">
                 <div class="row headers" style="color: black">
-                    <div class="col-md-3 col-sm-3 col" style="padding-left: 2px">
+                    <div class="col-md-4 col-sm-4 col" style="padding-left: 2px">
                         <p>Items: <b>{{$totalItem}}</b></p>
                     </div>
-                    <div class="col-md-3 col-sm-3 col">
+                    <div class="col-md-4 col-sm-4 col">
                         <p>Total: ${{$subTotal}}</p>
                     </div>
-                    <div class="col-md-3 col-sm-3 col">
+                    <div class="col-md-4 col-sm-4 col">
                         <p>HST: ${{$HSTTotal}}</p>
                     </div>
-                    <div class="col-md-3 col-sm-3 col" style="padding-right: 2px; text-align: -webkit-right;">
+                    {{-- <div class="col-md-3 col-sm-3 col" style="padding-right: 2px; text-align: -webkit-right;">
                         @if ($isOrderPlaced == 0)
                         <a href="{{ route('entry-header.done',[$entry_id]) }}">
-                            <button type="button" id="previewBtn" class="btn btn-success btn-sm">Mark Done</button></a>                            
+                            <button type="button" id="previewBtn" class="btn btn-success btn-sm">Mark Done</button></a>
                         @else
                         <a href="{{ route('entry-header.index') }}">
-                            <button type="button" id="previewBtn" class="btn btn-success btn-sm">View Orders</button></a>
+                            <button type="button" id="previewBtn" class="btn btn-success btn-sm">View
+                                Orders</button></a>
                         @endif
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
     </div>
 
     <div class="card mb-4">
+        <div class="card-header" style="clear: both">
+            <div class="">
+                <div class="col-6 p-0" style="float: left">
+                    <a href="{{ route('sendemail', $entry_id) }}">
+                        <button type="button" id="sendemail" class="btn btn-primary btn-sm"><i class="fa fa-envelope"></i> Send Mail</button>
+                    </a>
+                </div>
+                <div class="col-6 p-0" style="float: right; text-align: right">
+                    @if ($isOrderPlaced == 0)
+                    <a href="{{ route('entry-header.done',[$entry_id]) }}">
+                        <button type="button" id="previewBtn" class="btn btn-success btn-sm">Mark Done</button></a>
+                    @else
+                    <a href="{{ route('entry-header.index') }}">
+                        <button type="button" id="previewBtn" class="btn btn-success btn-sm">View Orders</button></a>
+                    @endif
+                </div>
+            </div>
+        </div>
         <div class="card-body" style="padding: 5px !important">
             <div class="row">
                 <div class="table-responsive">

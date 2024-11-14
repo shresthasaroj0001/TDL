@@ -236,7 +236,6 @@
                 <div class="table-responsive">
                     <table id="mytable" class="table responsive-table" style="width: 100%">
                         <thead class="sticky-tops">
-                            
                             <tr>
                                 <th>Name</th>
                                 <th class="hiddenCols">Category</th>

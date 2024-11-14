@@ -33,7 +33,9 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('entry/{id}/index/create', 'EntryController@create')->name('entry.item.create'); //passing 0 as default
     Route::post('entry/{id}/index/preview', 'EntryController@preview');
     Route::get('entry/{id}/index/next', 'EntryController@next')->name('next');
-    
+    Route::get('entry/{id}/index/sendemail', 'EntryController@sendemail')->name('sendemail');
+    Route::get('entry/{id}/index/next2', 'EntryController@next2');
+
     // Route::get('/report/overview/{typeid}', 'ReportController@test')->name('report_overview');
     // Route::get('/report/overview/{typeid}/last-entry', 'ReportController@getLastEntryOfaCategory');
     // Route::post('/report/overview/{typeid}/last-entry', 'ReportController@StoreMonthyExpenseEntry');

@@ -9,6 +9,8 @@ use DB;
 use Validator;
 use Carbon;
 use Jenssegers\Agent\Facades\Agent;
+use App\Mail\OrderEmail;
+use Illuminate\Support\Facades\Mail;
 
 class EntryController extends Controller
 {
@@ -209,6 +211,21 @@ class EntryController extends Controller
         return $json_data;
     }
 
+    public function sendemail($id)
+    {
+        try {
+            Mail::send(new OrderEmail($id));
+            return redirect()->route('next', [$id])->with('success', "Email sent ...");
+        } catch (\Exception $e) {
+            return redirect()->route('next', [$id])->with('error', "Failed to send email. Please try again");
+        }
+    }
+
+    public function next2($id)
+    {
+        return (new OrderEmail($id))->render();
+    }
+
     public function next($id)
     {
         $entry_id = (int) $id;
@@ -220,8 +237,7 @@ class EntryController extends Controller
         $subTotal = 0;
         $HSTTotal = 0;
 
-        if($responses != null)
-        {
+        if ($responses != null) {
             $subTotal = array_reduce($responses, function ($sum, $value) {
                 return $sum + floatval($value->subTotal);
             }, 0);
@@ -236,7 +252,7 @@ class EntryController extends Controller
         $isOrderPlaced = 0;
         $responsess = DB::Select("select order_placed from entry_header where entry_id=?", [$entry_id]);
         if ($responsess != null) {
-            $isOrderPlaced = $responsess[0]->order_placed; 
+            $isOrderPlaced = $responsess[0]->order_placed;
         }
 
         return view('admin.entry.next')->with('itemlist', $responses)->with('entry_id', $entry_id)->with('totalItem', $totalItem)->with('subTotal', number_format((float) $subTotal, 2, '.', ''))->with('HSTTotal', number_format((float)$HSTTotal, 2, '.', ''))->with('isOrderPlaced', $isOrderPlaced);
