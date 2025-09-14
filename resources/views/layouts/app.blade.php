@@ -6,7 +6,9 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <meta name="googlebot" content="noindex">
+    <meta name="robots" content="noindex, follow">
+    
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Scripts -->
